@@ -1,11 +1,16 @@
 import axios from 'axios';
-import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
-const API_URL = process.env.API_URL || 'http://localhost:3000';
+// Use localhost for iOS simulator, 10.0.2.2 for Android emulator
+const API_BASE_URL = Platform.select({
+  ios: 'http://localhost:3000',
+  android: 'http://10.0.2.2:3000',
+  default: 'http://localhost:3000',
+});
 
 class ApiService {
   private api = axios.create({
-    baseURL: API_URL,
+    baseURL: API_BASE_URL,
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json',
@@ -13,68 +18,58 @@ class ApiService {
   });
 
   async sendCommand(command: string) {
-    const response = await this.api.post('/api/command', {
-      command,
-      type: 'auto', // Let the backend determine the type
-    });
-    return response.data;
+    try {
+      const response = await this.api.post('/api/command', {
+        command,
+        type: 'auto',
+      });
+      return response.data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
   }
 
-  async query(question: string, context?: string) {
-    const response = await this.api.post('/api/query', {
-      question,
-      context,
-    });
-    return response.data;
+  async query(question: string) {
+    try {
+      const response = await this.api.post('/api/query', {
+        question,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
   }
 
-  async getCalendarEvents(startDate?: Date, endDate?: Date) {
-    const response = await this.api.get('/api/calendar/events', {
-      params: {
-        start: startDate?.toISOString(),
-        end: endDate?.toISOString(),
-      },
-    });
-    return response.data;
+  async getTasks() {
+    try {
+      const response = await this.api.get('/api/tasks');
+      return response.data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
   }
 
-  async createCalendarEvent(event: {
-    title: string;
-    description?: string;
-    startTime: Date;
-    endTime: Date;
-    location?: string;
-    attendees?: string[];
-  }) {
-    const response = await this.api.post('/api/calendar/events', event);
-    return response.data;
+  async getEvents() {
+    try {
+      const response = await this.api.get('/api/calendar/events');
+      return response.data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
   }
 
-  async getTasks(status?: string) {
-    const response = await this.api.get('/api/tasks', {
-      params: { status },
-    });
-    return response.data;
-  }
-
-  async createTask(task: {
-    title: string;
-    description?: string;
-    priority?: 'low' | 'medium' | 'high' | 'urgent';
-    dueDate?: Date;
-  }) {
-    const response = await this.api.post('/api/tasks', task);
-    return response.data;
-  }
-
-  async updateTask(taskId: string, updates: any) {
-    const response = await this.api.patch(`/api/tasks/${taskId}`, updates);
-    return response.data;
-  }
-
-  async healthCheck() {
-    const response = await this.api.get('/health');
-    return response.data;
+  async checkHealth() {
+    try {
+      const response = await this.api.get('/health');
+      return response.data;
+    } catch (error) {
+      console.error('Health check failed:', error);
+      return { status: 'error' };
+    }
   }
 }
 

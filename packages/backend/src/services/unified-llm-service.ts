@@ -4,6 +4,8 @@
  * Provides intelligent routing between multiple LLM providers
  */
 
+import { RetryService, llmRetryCondition } from '@kenny-assistant/shared';
+
 export interface LLMProvider {
   name: string;
   endpoint: string;
@@ -57,6 +59,11 @@ export class UnifiedLLMService {
   }
 
   private initializeProviders(): void {
+    // Priority Order (lower number = higher priority):
+    // 1. DeepSeek-R1 (Together AI) - FREE 70B model, best quality
+    // 2. Gemini Pro - FREE with rate limits
+    // 3. OpenRouter Mistral - FREE but only 7B
+    // 4. Anthropic Claude - COSTS MONEY, only use if others fail
     // Anthropic Claude
     if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_anthropic_api_key_here') {
       this.providers.set('anthropic', {
@@ -64,7 +71,7 @@ export class UnifiedLLMService {
         endpoint: 'https://api.anthropic.com/v1/messages',
         apiKey: process.env.ANTHROPIC_API_KEY,
         model: 'claude-3-haiku-20240307',
-        priority: 1,
+        priority: 4, // Last resort - costs money!
         maxTokens: 4096,
         rateLimit: { requestsPerMinute: 1000, tokensPerMinute: 100000 },
         costPerToken: 0.00025,
@@ -74,6 +81,7 @@ export class UnifiedLLMService {
       });
     }
 
+
     // Google Gemini
     if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here') {
       this.providers.set('gemini', {
@@ -81,7 +89,7 @@ export class UnifiedLLMService {
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
         apiKey: process.env.GEMINI_API_KEY,
         model: 'gemini-pro',
-        priority: 2,
+        priority: 2, // Second choice - also free
         maxTokens: 8192,
         rateLimit: { requestsPerMinute: 60, tokensPerMinute: 60000 },
         costPerToken: 0,
@@ -98,7 +106,7 @@ export class UnifiedLLMService {
         endpoint: 'https://openrouter.ai/api/v1/chat/completions',
         apiKey: process.env.OPENROUTER_API_KEY,
         model: 'mistralai/mistral-7b-instruct:free',
-        priority: 3,
+        priority: 3, // Third choice - free but smaller model
         maxTokens: 4096,
         rateLimit: { requestsPerMinute: 20, tokensPerMinute: 20000 },
         costPerToken: 0,
@@ -108,17 +116,17 @@ export class UnifiedLLMService {
       });
     }
 
-    // Together AI
-    if (process.env.TOGETHER_API_KEY) {
+    // Together AI - DeepSeek-R1 (FREE 70B model!)
+    if (process.env.TOGETHER_API_KEY && process.env.TOGETHER_API_KEY !== '') {
       this.providers.set('together', {
         name: 'together',
         endpoint: 'https://api.together.xyz/v1/chat/completions',
         apiKey: process.env.TOGETHER_API_KEY,
-        model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-        priority: 4,
-        maxTokens: 4096,
-        rateLimit: { requestsPerMinute: 60, tokensPerMinute: 50000 },
-        costPerToken: 0,
+        model: 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free',
+        priority: 1, // DEFAULT - Free and most powerful!
+        maxTokens: 8192,
+        rateLimit: { requestsPerMinute: 60, tokensPerMinute: 100000 },
+        costPerToken: 0, // Completely FREE!
         healthy: true,
         currentRequests: 0,
         lastRequestTime: 0
@@ -233,17 +241,58 @@ export class UnifiedLLMService {
   private async callProvider(provider: LLMProvider, request: LLMRequest): Promise<LLMResponse> {
     const startTime = Date.now();
     
-    if (provider.name === 'anthropic') {
-      return this.callAnthropic(provider, request, startTime);
-    } else if (provider.name === 'gemini') {
-      return this.callGemini(provider, request, startTime);
-    } else if (provider.name === 'openrouter') {
-      return this.callOpenRouter(provider, request, startTime);
-    } else if (provider.name === 'together') {
-      return this.callTogether(provider, request, startTime);
-    } else {
-      throw new Error(`Unknown provider: ${provider.name}`);
-    }
+    // Wrap provider calls with retry logic
+    const operation = async () => {
+      if (provider.name === 'anthropic') {
+        return this.callAnthropic(provider, request, startTime);
+      } else if (provider.name === 'gemini') {
+        return this.callGemini(provider, request, startTime);
+      } else if (provider.name === 'openrouter') {
+        return this.callOpenRouter(provider, request, startTime);
+      } else if (provider.name === 'together') {
+        return this.callTogether(provider, request, startTime);
+      } else {
+        throw new Error(`Unknown provider: ${provider.name}`);
+      }
+    };
+
+    // Use retry service with LLM-specific configuration
+    return RetryService.executeWithRetry(operation, {
+      maxAttempts: 3,
+      baseDelay: 1000,
+      maxDelay: 10000,
+      exponentialBase: 2,
+      jitter: true,
+      retryCondition: (error, attempt) => {
+        // Don't retry if provider is marked unhealthy
+        if (!provider.healthy) {
+          return false;
+        }
+        
+        // Check for rate limit with Retry-After header
+        const retryAfter = RetryService.extractRetryAfter(error);
+        if (retryAfter && retryAfter > 30000) {
+          // If retry delay is more than 30 seconds, don't retry here
+          // Let the main loop try a different provider
+          return false;
+        }
+        
+        // Use LLM-specific retry condition
+        return llmRetryCondition(error, attempt);
+      },
+      onRetry: (error, attempt, nextDelay) => {
+        console.log(`🔄 Retrying ${provider.name} after error: ${error.message}. Attempt ${attempt}, waiting ${nextDelay}ms`);
+        
+        // Update rate limit tracking if needed
+        if (error.status === 429 || error.message?.includes('429')) {
+          const usage = this.usageTracker.get(provider.name);
+          if (usage) {
+            // Temporarily reduce the rate limit
+            usage.requests = Math.floor(provider.rateLimit.requestsPerMinute * 0.8);
+          }
+        }
+      }
+    });
   }
 
   private async callAnthropic(provider: LLMProvider, request: LLMRequest, startTime: number): Promise<LLMResponse> {
@@ -382,8 +431,15 @@ export class UnifiedLLMService {
 
     const data = await response.json();
     
+    // Clean up DeepSeek-R1 responses that include <think> tags
+    let content = data.choices[0].message.content;
+    if (provider.model.includes('DeepSeek')) {
+      // Remove <think>...</think> blocks from the response
+      content = content.replace(/<think>[\s\S]*?<\/think>\s*/g, '').trim();
+    }
+    
     return {
-      content: data.choices[0].message.content,
+      content,
       provider: provider.name,
       model: provider.model,
       tokensUsed: data.usage?.total_tokens || 0,
