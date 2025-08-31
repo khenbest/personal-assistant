@@ -1,0 +1,36 @@
+{
+  "name": "@kenny-assistant/backend",
+  "version": "0.0.0",
+  "description": "Backend API for Kenny's Personal Assistant",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -b",
+    "start": "node dist/server.js",
+    "test": "jest",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPattern=integration",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@fastify/helmet": "^11.1.1",
+    "@fastify/rate-limit": "^9.1.0",
+    "@fastify/swagger": "^8.12.1",
+    "@fastify/swagger-ui": "^2.0.1",
+    "@supabase/supabase-js": "^2.39.1",
+    "dotenv": "^16.4.7",
+    "fastify": "^4.25.2",
+    "fastify-plugin": "^4.5.1",
+    "langchain": "^0.0.212",
+    "pino": "^8.17.2",
+    "pino-pretty": "^10.3.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "tsx": "^4.7.0"
+  }
+}

@@ -1,0 +1,15 @@
+import { FastifyInstance } from 'fastify';
+import { commandRoutes } from './command';
+import { calendarRoutes } from './calendar';
+import { taskRoutes } from './tasks';
+import { healthRoutes } from './health';
+import chatRoutes from './chat';
+
+export async function registerRoutes(fastify: FastifyInstance) {
+  // Register all route modules
+  await fastify.register(healthRoutes, { prefix: '/api' });
+  await fastify.register(commandRoutes, { prefix: '/api' });
+  await fastify.register(calendarRoutes, { prefix: '/api' });
+  await fastify.register(taskRoutes, { prefix: '/api' });
+  await fastify.register(chatRoutes);
+}

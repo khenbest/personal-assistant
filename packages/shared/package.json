@@ -1,0 +1,16 @@
+{
+  "name": "@kenny-assistant/shared",
+  "version": "0.0.0",
+  "description": "Shared types and utilities for Kenny's Personal Assistant",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5"
+  }
+}

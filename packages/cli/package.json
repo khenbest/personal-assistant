@@ -1,0 +1,29 @@
+{
+  "name": "@kenny-assistant/cli",
+  "version": "0.0.0",
+  "description": "CLI client for testing Kenny's Personal Assistant",
+  "main": "dist/index.js",
+  "bin": {
+    "kenny-cli": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -b",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@kenny-assistant/shared": "^0.0.0",
+    "axios": "^1.6.3",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "inquirer": "^9.2.12",
+    "ora": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.10.5",
+    "tsx": "^4.7.0"
+  }
+}

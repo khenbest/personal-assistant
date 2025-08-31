@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Kenny Assistant",
+    "slug": "kenny-assistant",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kenny.assistant",
+      "infoPlist": {
+        "NSCalendarsUsageDescription": "This app needs access to your calendar to create and manage events.",
+        "NSRemindersUsageDescription": "This app needs access to reminders to create and manage tasks.",
+        "NSMicrophoneUsageDescription": "This app needs access to your microphone for voice commands.",
+        "NSSpeechRecognitionUsageDescription": "This app needs speech recognition to process voice commands.",
+        "NSContactsUsageDescription": "This app needs access to contacts to add attendees to calendar events."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.kenny.assistant",
+      "permissions": [
+        "RECORD_AUDIO",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR",
+        "READ_CONTACTS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-calendar",
+      "expo-av",
+      "expo-notifications"
+    ]
+  }
+}
