@@ -172,8 +172,8 @@ class MockDatabaseService {
     const tasks = Array.from(this.tasks.values())
       .filter(t => t.user_id === userId && ['pending', 'in_progress'].includes(t.status))
       .sort((a, b) => {
-        const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
-        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        const priorityOrder: { [key: string]: number } = { urgent: 0, high: 1, medium: 2, low: 3 };
+        const priorityDiff = (priorityOrder[a.priority] || 2) - (priorityOrder[b.priority] || 2);
         if (priorityDiff !== 0) return priorityDiff;
         return (a.due_date || '').localeCompare(b.due_date || '');
       });

@@ -216,18 +216,8 @@ export function ChatScreen() {
         renderAvatar={null}
         showAvatarForEveryMessage={false}
         alwaysShowSend
-        scrollToBottom
         scrollToBottomStyle={styles.scrollToBottom}
         messagesContainerStyle={styles.messagesContainer}
-        textStyle={{ color: colors.text }}
-        wrapperStyle={{
-          left: styles.wrapperLeft,
-          right: styles.wrapperRight,
-        }}
-        timeTextStyle={{
-          left: { color: colors.lightText },
-          right: { color: colors.lightText },
-        }}
       />
 
       {isLoading && (

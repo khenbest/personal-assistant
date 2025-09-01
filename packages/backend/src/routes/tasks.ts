@@ -19,8 +19,8 @@ const updateTaskSchema = z.object({
 
 export async function taskRoutes(fastify: FastifyInstance) {
   // Get tasks
-  fastify.get('/tasks', async (request, reply) => {
-    const { status } = request.query as { status?: string };
+  fastify.get('/tasks', async (_request, _reply) => {
+    // const _query = request.query as { status?: string };
     
     try {
       const tasks = await db.getPendingTasks('demo-user');
@@ -38,7 +38,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
   });
   
   // Create task
-  fastify.post('/tasks', async (request, reply) => {
+  fastify.post('/tasks', async (request, _reply) => {
     const taskData = createTaskSchema.parse(request.body);
     
     try {
@@ -68,7 +68,7 @@ export async function taskRoutes(fastify: FastifyInstance) {
   });
   
   // Update task
-  fastify.patch('/tasks/:taskId', async (request, reply) => {
+  fastify.patch('/tasks/:taskId', async (request, _reply) => {
     const { taskId } = request.params as { taskId: string };
     const updates = updateTaskSchema.parse(request.body);
     

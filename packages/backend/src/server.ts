@@ -2,14 +2,25 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import multipart from '@fastify/multipart';
 import { config } from './config';
 import { registerRoutes } from './routes';
 import { errorHandler } from './middleware/error-handler';
-import { logger } from './utils/logger';
+// import { logger } from './utils/logger';
 
 async function buildServer() {
   const fastify = Fastify({
-    logger: logger,
+    logger: {
+      level: 'info',
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          ignore: 'pid,hostname',
+          translateTime: 'SYS:standard',
+        },
+      },
+    },
     requestIdHeader: 'x-request-id',
     requestIdLogLabel: 'requestId',
     disableRequestLogging: false,
@@ -40,8 +51,17 @@ async function buildServer() {
     timeWindow: '1 minute',
   });
 
+  // Multipart support for file uploads
+  await fastify.register(multipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB max file size
+    },
+  });
+
   // Error handling
-  fastify.setErrorHandler(errorHandler);
+  fastify.setErrorHandler(async (error, request, reply) => {
+    return errorHandler(error, request, reply);
+  });
 
   // Health check
   fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));

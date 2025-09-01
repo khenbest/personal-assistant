@@ -3,7 +3,7 @@ import { supabase } from '../db/supabase';
 
 export async function healthRoutes(fastify: FastifyInstance) {
   // Database health check
-  fastify.get('/health/db', async (request, reply) => {
+  fastify.get('/health/db', async (_request, _reply) => {
     try {
       const { error } = await supabase.from('conversations').select('count').limit(1);
       

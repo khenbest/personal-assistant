@@ -32,7 +32,7 @@ export interface RetryResult<T> {
 /**
  * Default retry condition for HTTP-like errors
  */
-export const defaultRetryCondition = (error: any, attempt: number): boolean => {
+export const defaultRetryCondition = (error: any, _attempt: number): boolean => {
   // Don't retry if we've hit max attempts
   if (!error) return false;
 
@@ -92,7 +92,6 @@ export class RetryService {
       onRetry
     } = options;
 
-    const startTime = Date.now();
     let lastError: any;
     
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -143,6 +142,10 @@ export class RetryService {
     
     for (let i = 0; i < operations.length; i++) {
       const operation = operations[i];
+      
+      if (!operation) {
+        continue;
+      }
       
       try {
         const result = await this.executeWithRetry(operation, {

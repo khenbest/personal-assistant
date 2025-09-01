@@ -13,8 +13,8 @@ const createEventSchema = z.object({
 
 export async function calendarRoutes(fastify: FastifyInstance) {
   // Get calendar events
-  fastify.get('/calendar/events', async (request, reply) => {
-    const { start, end } = request.query as { start?: string; end?: string };
+  fastify.get('/calendar/events', async (_request, _reply) => {
+    // const _query = request.query as { start?: string; end?: string };
     
     try {
       const events = await db.getUpcomingEvents('demo-user', 20);
@@ -32,7 +32,7 @@ export async function calendarRoutes(fastify: FastifyInstance) {
   });
   
   // Create calendar event
-  fastify.post('/calendar/events', async (request, reply) => {
+  fastify.post('/calendar/events', async (request, _reply) => {
     const eventData = createEventSchema.parse(request.body);
     
     try {

@@ -17,7 +17,7 @@ const querySchema = z.object({
 export async function commandRoutes(fastify: FastifyInstance) {
   // Process natural language commands
   fastify.post('/command', async (request, reply) => {
-    const { command, type, options } = commandSchema.parse(request.body);
+    const { command } = commandSchema.parse(request.body);
     
     try {
       // Parse the command using LLM
@@ -112,7 +112,7 @@ export async function commandRoutes(fastify: FastifyInstance) {
         }
       }
     } catch (error) {
-      fastify.log.error('Command processing error:', error);
+      fastify.log.error({ error }, 'Command processing error');
       return reply.status(500).send({
         success: false,
         message: 'Failed to process command',
@@ -157,7 +157,7 @@ export async function commandRoutes(fastify: FastifyInstance) {
         tasks,
       };
     } catch (error) {
-      fastify.log.error('Query processing error:', error);
+      fastify.log.error({ error }, 'Query processing error');
       return reply.status(500).send({
         success: false,
         message: 'Failed to process query',

@@ -2,7 +2,7 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import ora from 'ora';
+// import ora from 'ora'; // TODO: Add loading spinners
 import { scheduleCommand } from './commands/schedule';
 import { queryCommand } from './commands/query';
 import { testCommand } from './commands/test';

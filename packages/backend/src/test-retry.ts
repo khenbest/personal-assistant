@@ -24,7 +24,7 @@ async function testRetryLogic() {
     console.log('   Model:', response1.model);
     console.log('');
   } catch (error) {
-    console.error('❌ Test 1 failed:', error.message);
+    console.error('❌ Test 1 failed:', error instanceof Error ? error.message : String(error));
   }
 
   // Test 2: Multiple rapid requests to trigger rate limiting
@@ -50,9 +50,9 @@ async function testRetryLogic() {
   const results = await Promise.all(promises);
   results.forEach((result, i) => {
     if (result.success) {
-      console.log(`   Request ${i + 1}: ✅ Provider: ${result.provider}, Cached: ${result.cached}`);
+      console.log(`   Request ${i + 1}: ✅ Provider: ${'provider' in result ? result.provider : 'unknown'}, Cached: ${'cached' in result ? result.cached : false}`);
     } else {
-      console.log(`   Request ${i + 1}: ❌ Error: ${result.error}`);
+      console.log(`   Request ${i + 1}: ❌ Error: ${'error' in result ? result.error : 'unknown error'}`);
     }
   });
   console.log('');
@@ -70,7 +70,7 @@ async function testRetryLogic() {
     console.log('   Content:', response3.content.substring(0, 100) + '...');
     console.log('');
   } catch (error) {
-    console.error('❌ Test 3 failed:', error.message);
+    console.error('❌ Test 3 failed:', error instanceof Error ? error.message : String(error));
   }
 
   // Test 4: Check provider health and stats

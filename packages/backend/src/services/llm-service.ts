@@ -202,8 +202,10 @@ export class LLMService {
 
   /**
    * Mock response for testing when LLM service is unavailable
+   * Currently unused - kept for future testing needs
    */
-  private mockResponse(request: LLMRequest): LLMResponse {
+  /*
+  private _mockResponse(request: LLMRequest): LLMResponse {
     // Simple pattern matching for testing
     const text = request.prompt.toLowerCase();
     
@@ -234,6 +236,7 @@ export class LLMService {
       cached: false,
     };
   }
+  */
 }
 
 export const llmService = new LLMService();

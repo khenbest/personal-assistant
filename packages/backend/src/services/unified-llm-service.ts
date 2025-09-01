@@ -23,6 +23,22 @@ export interface LLMProvider {
   lastRequestTime: number;
 }
 
+// API Response types
+interface AnthropicResponse {
+  content: Array<{ text: string }>;
+  usage?: { total_tokens: number };
+}
+
+interface GeminiResponse {
+  candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+  usageMetadata?: { totalTokenCount: number };
+}
+
+interface OpenRouterResponse {
+  choices: Array<{ message: { content: string } }>;
+  usage?: { total_tokens: number };
+}
+
 export interface LLMRequest {
   prompt: string;
   maxTokens?: number;
@@ -221,11 +237,14 @@ export class UnifiedLLMService {
       selected = 'anthropic';
       reason = 'High complexity request - using most capable model';
     } else if (complexity === 'low' && available.some(([name]) => name === 'openrouter' || name === 'together')) {
-      selected = available.find(([name]) => name === 'openrouter' || name === 'together')![0];
+      const found = available.find(([name]) => name === 'openrouter' || name === 'together');
+      selected = found ? found[0] : (available[0] ? available[0][0] : 'anthropic');
       reason = 'Low complexity request - using efficient model';
-    } else {
+    } else if (available.length > 0 && available[0]) {
       selected = available[0][0];
       reason = 'Using highest priority available provider';
+    } else {
+      throw new Error('No providers available');
     }
 
     const fallbacks = available
@@ -319,10 +338,10 @@ export class UnifiedLLMService {
       throw new Error(`Anthropic API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as AnthropicResponse;
     
     return {
-      content: data.content[0].text,
+      content: data.content?.[0]?.text || '',
       provider: provider.name,
       model: provider.model,
       tokensUsed: data.usage?.total_tokens || 0,
@@ -353,10 +372,10 @@ export class UnifiedLLMService {
       throw new Error(`Gemini API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as GeminiResponse;
     
     return {
-      content: data.candidates[0].content.parts[0].text,
+      content: data.candidates?.[0]?.content?.parts?.[0]?.text || '',
       provider: provider.name,
       model: provider.model,
       tokensUsed: data.usageMetadata?.totalTokenCount || 0,
@@ -392,10 +411,10 @@ export class UnifiedLLMService {
       throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as OpenRouterResponse;
     
     return {
-      content: data.choices[0].message.content,
+      content: data.choices?.[0]?.message?.content || '',
       provider: provider.name,
       model: provider.model,
       tokensUsed: data.usage?.total_tokens || 0,
@@ -429,10 +448,10 @@ export class UnifiedLLMService {
       throw new Error(`Together API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as OpenRouterResponse;
     
     // Clean up DeepSeek-R1 responses that include <think> tags
-    let content = data.choices[0].message.content;
+    let content = data.choices?.[0]?.message?.content || '';
     if (provider.model.includes('DeepSeek')) {
       // Remove <think>...</think> blocks from the response
       content = content.replace(/<think>[\s\S]*?<\/think>\s*/g, '').trim();
@@ -462,7 +481,9 @@ export class UnifiedLLMService {
     // Implement LRU cache
     if (this.responseCache.size >= this.MAX_CACHE_SIZE) {
       const firstKey = this.responseCache.keys().next().value;
-      this.responseCache.delete(firstKey);
+      if (firstKey) {
+        this.responseCache.delete(firstKey);
+      }
     }
     this.responseCache.set(key, response);
     
@@ -485,7 +506,7 @@ export class UnifiedLLMService {
 
   private resetRateLimits(): void {
     const now = new Date();
-    for (const [name, usage] of this.usageTracker) {
+    for (const [_name, usage] of this.usageTracker) {
       if (now.getTime() - usage.lastReset.getTime() > 60000) {
         usage.requests = 0;
         usage.tokens = 0;

@@ -126,9 +126,93 @@ export function MainScreen() {
     setRecording(null);
 
     if (uri) {
-      // In a real app, you would send this to WhisperKit or your STT service
-      // For now, we'll show a placeholder
-      Alert.alert('Voice Input', 'Voice processing will be implemented with WhisperKit');
+      try {
+        // Send audio to backend for transcription
+        const formData = new FormData();
+        formData.append('file', {
+          uri,
+          type: 'audio/m4a',
+          name: 'recording.m4a',
+        } as any);
+
+        const transcribeResponse = await fetch(`${Platform.select({
+          ios: 'http://localhost:3000',
+          android: 'http://10.0.2.2:3000',
+          default: 'http://localhost:3000',
+        })}/api/transcribe`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        if (!transcribeResponse.ok) {
+          throw new Error('Transcription failed');
+        }
+
+        const { text } = await transcribeResponse.json();
+        
+        // Set the transcribed text in the input field
+        setInput(text);
+        
+        // Automatically send it as a command
+        const userMessage: Message = {
+          id: Date.now().toString(),
+          role: 'user',
+          content: text,
+          timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, userMessage]);
+        setIsLoading(true);
+
+        // Send to command endpoint
+        const response = await apiService.sendCommand(text);
+        
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: response.message || response.content,
+          timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
+        
+        // Speak the response
+        Speech.speak(assistantMessage.content, {
+          language: 'en-US',
+          rate: 0.9,
+        });
+
+        // Handle specific intents
+        if (response.intent === 'schedule' && response.event) {
+          Alert.alert(
+            'Event Created',
+            `${response.event.title} scheduled for ${new Date(response.event.start_time).toLocaleString()}`,
+            [
+              { text: 'View Calendar', onPress: () => navigation.navigate('Calendar' as never) },
+              { text: 'OK' },
+            ]
+          );
+        } else if (response.intent === 'task' && response.task) {
+          Alert.alert(
+            'Task Created',
+            `${response.task.title} has been added to your tasks`,
+            [
+              { text: 'View Tasks', onPress: () => navigation.navigate('Tasks' as never) },
+              { text: 'OK' },
+            ]
+          );
+        }
+
+        setIsLoading(false);
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      } catch (error) {
+        console.error('Error processing voice input:', error);
+        Alert.alert('Error', 'Failed to process voice input. Please try again.');
+        setIsLoading(false);
+      }
     }
   };
 
@@ -210,13 +294,12 @@ export function MainScreen() {
         {/* Input Bar */}
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, { maxHeight: 100 }]}
             value={input}
             onChangeText={setInput}
             placeholder="Type a message or tap the mic..."
             placeholderTextColor="#8E8E93"
             multiline
-            maxHeight={100}
             onSubmitEditing={handleSend}
             editable={!isLoading}
           />

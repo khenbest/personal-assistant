@@ -1,13 +1,13 @@
 import { FastifyPluginAsync } from 'fastify';
-import FormData from 'form-data';
-import fetch from 'node-fetch';
+// import FormData from 'form-data';
+// import fetch from 'node-fetch';
 
 const transcribeRoutes: FastifyPluginAsync = async (fastify) => {
   // Transcribe audio using OpenAI Whisper API (if you have OpenAI key)
   // Or use a free alternative like Assembly AI
   fastify.post('/api/transcribe', async (request, reply) => {
     try {
-      const data = await request.file();
+      const data = await (request as any).file();
       
       if (!data) {
         return reply.code(400).send({ error: 'No audio file provided' });
