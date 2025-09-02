@@ -1,0 +1,86 @@
+text,intent
+"schedule a meeting tomorrow at 3pm with the product team",create_event
+"put lunch with Sarah on my calendar for Friday at noon",create_event
+"block out 2 hours next Tuesday morning for deep work",create_event
+"I need to meet with John next week sometime",create_event
+"add dentist appointment to calendar for May 15th at 2:30",create_event
+"can you schedule my quarterly review for the 28th",create_event
+"book conference room for team standup every Monday at 9am",create_event
+"create recurring weekly sync with engineering",create_event
+"add birthday party on Saturday from 6 to 9pm",create_event
+"schedule follow-up call with client next Thursday afternoon",create_event
+"I have a doctor's appointment tomorrow that needs to go on my calendar",create_event
+"block my calendar for vacation from June 1st to June 7th",create_event
+"set up monthly 1-on-1 with my manager",create_event
+"add team offsite to calendar for March 20-22",create_event
+"pencil in coffee chat with mentor next week",create_event
+"remind me to call mom tomorrow evening",add_reminder
+"set a reminder to pay rent on the 1st",add_reminder
+"ping me in 2 hours to take my medication",add_reminder
+"remind me about the project deadline next Friday",add_reminder
+"nudge me to submit expense report by end of day",add_reminder
+"I need a reminder to pick up groceries after work",add_reminder
+"alert me 15 minutes before the meeting",add_reminder
+"remind me every morning at 8am to take vitamins",add_reminder
+"set follow-up reminder for next week",add_reminder
+"don't let me forget about John's birthday on the 15th",add_reminder
+"remind me to review the proposal before Monday's meeting",add_reminder
+"ping me when it's time to leave for the airport",add_reminder
+"I need daily reminders to drink water",add_reminder
+"alert me to check in for my flight 24 hours before",add_reminder
+"remind me to call the insurance company tomorrow",add_reminder
+"make a note about the new product idea we discussed",create_note
+"jot down these meeting notes for me",create_note
+"save this thought: need to refactor the auth system",create_note
+"add to my notes: potential blog post topics",create_note
+"capture this: competitor launched new feature",create_note
+"note to self: research kubernetes alternatives",create_note
+"document the bug we found in production",create_note
+"save these action items from today's meeting",create_note
+"add to project notes: client wants faster delivery",create_note
+"write down: interesting book recommendation from Sarah",create_note
+"store this idea for the hackathon",create_note
+"keep track of these requirements changes",create_note
+"note: need to update documentation",create_note
+"save this recipe I just thought of",create_note
+"capture these metrics from the dashboard",create_note
+"check my emails",read_email
+"what emails do I have from Alice",read_email
+"show me unread messages in my inbox",read_email
+"any important emails today",read_email
+"read emails about the project",read_email
+"do I have any emails from my boss",read_email
+"check if the client responded",read_email
+"show starred emails from this week",read_email
+"what's in my priority inbox",read_email
+"scan my emails for meeting invites",read_email
+"any urgent messages I should know about",read_email
+"pull up emails with invoices",read_email
+"show me the latest newsletter",read_email
+"check spam folder for important emails",read_email
+"what emails came in while I was in the meeting",read_email
+"send an email to the team about the launch",send_email
+"draft a message to Alex about the proposal",send_email
+"compose email to support@company.com",send_email
+"write an email to mom saying I'll visit this weekend",send_email
+"email the client our project update",send_email
+"send meeting notes to all attendees",send_email
+"reply to John's email with approval",send_email
+"forward this document to the legal team",send_email
+"email myself these notes",send_email
+"send thank you note to the interview panel",send_email
+"draft resignation letter to HR",send_email
+"compose follow-up email to prospect",send_email
+"send availability for next week to Sarah",send_email
+"email the invoice to accounting",send_email
+"write a quick update to my manager",send_email
+"what's on my schedule today",none
+"hello how are you",none
+"what's the weather like",none
+"tell me a joke",none
+"how do I use this app",none
+"cancel that",none
+"never mind",none
+"stop",none
+"help",none
+"what can you do",none

@@ -11,8 +11,15 @@
     "test": "jest",
     "test:unit": "jest --testPathPattern=unit",
     "test:integration": "jest --testPathPattern=integration",
+    "test:intent": "tsx tests/test-intent-classification.ts",
     "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "db:setup": "tsx src/db/setup-database-automated.ts",
+    "db:check": "tsx src/db/check-tables.ts",
+    "db:migrate": "cd ../.. && supabase db push",
+    "db:reset": "cd ../.. && supabase db reset",
+    "db:manual": "bash ../../setup-db.sh",
+    "setup": "npm run db:check"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
@@ -22,12 +29,15 @@
     "@fastify/swagger": "^8.12.1",
     "@fastify/swagger-ui": "^2.0.1",
     "@supabase/supabase-js": "^2.39.1",
+    "chrono-node": "^2.8.4",
     "dotenv": "^16.4.7",
     "fastify": "^4.25.2",
     "fastify-plugin": "^4.5.1",
     "langchain": "^0.0.212",
     "pino": "^8.17.2",
     "pino-pretty": "^10.3.1",
+    "wink-eng-lite-web-model": "^1.8.1",
+    "wink-nlp": "^2.4.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

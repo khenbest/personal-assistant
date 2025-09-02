@@ -1,0 +1,31 @@
+text,intent,title,datetime_point,datetime_range,duration_min,email_to,email_from,email_subject,email_body,note_body,reminder_text
+"schedule a meeting tomorrow at 3pm with the product team",create_event,meeting with the product team,2025-09-03T15:00:00,,60,,,,,,
+"block 2 hours next Tuesday morning for deep work",create_event,deep work,2025-09-09T09:00:00,,120,,,,,,
+"book conference room from 2 to 4pm on Friday",create_event,conference room,,2025-09-05T14:00:00/2025-09-05T16:00:00,,,,,,,
+"add dentist appointment May 15th 2:30pm for 90 minutes",create_event,dentist appointment,2025-05-15T14:30:00,,90,,,,,,
+"schedule lunch with Sarah Friday noon",create_event,lunch with Sarah,2025-09-05T12:00:00,,60,,,,,,
+"create all-day event for my birthday on March 10",create_event,my birthday,2025-03-10T00:00:00,,1440,,,,,,
+"remind me to call mom tomorrow at 7pm",add_reminder,,2025-09-03T19:00:00,,,,,,,,"call mom"
+"set reminder in 2 hours to take medication",add_reminder,,+PT2H,,,,,,,,"take medication"
+"ping me next Friday about the deadline",add_reminder,,2025-09-05T09:00:00,,,,,,,,"the deadline"
+"remind me every day at 8am to take vitamins",add_reminder,,recurring:daily:08:00,,,,,,,,"take vitamins"
+"alert me 15 minutes before the meeting",add_reminder,,relative:-PT15M,,,,,,,,"meeting"
+"make a note about the new product idea",create_note,,,,,,,,,,"the new product idea",
+"jot down: refactor auth system by Q2",create_note,,,,,,,,,,"refactor auth system by Q2",
+"save meeting notes: decided to pivot strategy",create_note,,,,,,,,,,"meeting notes: decided to pivot strategy",
+"note to self research kubernetes alternatives",create_note,,,,,,,,,,"research kubernetes alternatives",
+"what emails do I have from alice@company.com",read_email,,,,,,"alice@company.com",,,,
+"show unread messages about the project",read_email,,,,,,,,"the project",,,
+"check emails from this morning",read_email,,,today:morning/now,,,,,,,
+"any emails with attachments from last week",read_email,,,lastweek:start/lastweek:end,,,,"attachments",,,
+"send email to team@company.com about the launch",send_email,,,,,"team@company.com",,,"about the launch",,
+"draft message to john@example.com subject Q4 planning body let's discuss priorities",send_email,,,,,"john@example.com",,,"Q4 planning","let's discuss priorities",
+"email sarah@work.com and mike@work.com the meeting notes",send_email,,,,,"sarah@work.com,mike@work.com",,,"meeting notes",,
+"compose email to support saying I need help with my account",send_email,,,,,"support@company.com",,,"help with my account","I need help with my account",
+"forward this to legal team with a note about urgency",send_email,,,,,"legal@company.com",,,"Fwd: Original Subject","with a note about urgency",
+"reply to Bob's email approving the proposal",send_email,,,,,"bob@company.com",,,"Re: Proposal","approving the proposal",
+"schedule meeting with John and Sarah tomorrow 3-5pm in room 201",create_event,"meeting with John and Sarah",,2025-09-03T15:00:00/2025-09-03T17:00:00,,"john@company.com,sarah@company.com",,,,,"room 201"
+"remind me when I get home to water the plants",add_reminder,,location:home,,,,,,,,"water the plants"
+"set up recurring standup every weekday at 9:30am",create_event,standup,recurring:weekday:09:30,,30,,,,,,
+"add workout to calendar MWF 6am for 1 hour",create_event,workout,recurring:MWF:06:00,,60,,,,,,
+"email the team and CC manager about delays",send_email,,,,,"team@company.com",,,"delays",,"manager@company.com"

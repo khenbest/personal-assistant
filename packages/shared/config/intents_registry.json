@@ -1,0 +1,214 @@
+{
+  "version": "2.0",
+  "confidenceThreshold": 0.65,
+  "llmFallbackThreshold": 0.5,
+  "learningEnabled": true,
+  "intents": {
+    "create_event": {
+      "displayName": "Create Calendar Event",
+      "required": ["title", "datetime_point|datetime_range"],
+      "optional": ["duration_min", "location", "attendees", "description"],
+      "defaults": { 
+        "duration_min": 60,
+        "location": null,
+        "attendees": []
+      },
+      "parsers": {
+        "datetime_point": "chrono",
+        "datetime_range": "chrono_range",
+        "duration_min": "duration_parser",
+        "title": "quoted_or_semantic",
+        "attendees": "email_extractor"
+      },
+      "validation": {
+        "datetime_point": "future_date",
+        "duration_min": "positive_integer",
+        "attendees": "valid_emails"
+      },
+      "confirm": {
+        "template": "Create event \"{title}\" {when}?",
+        "requireConfirmation": true,
+        "showDetails": ["datetime", "duration", "location", "attendees"]
+      },
+      "handler": "calendar.createEvent",
+      "examples": [
+        "schedule a meeting tomorrow at 3pm",
+        "book conference room for 2 hours next Tuesday",
+        "add dentist appointment to calendar"
+      ]
+    },
+    "add_reminder": {
+      "displayName": "Set Reminder",
+      "required": ["reminder_text"],
+      "optional": ["datetime_point", "location", "recurring"],
+      "defaults": {
+        "datetime_point": "+PT1H"
+      },
+      "parsers": {
+        "datetime_point": "chrono_or_relative",
+        "reminder_text": "after_keywords(remind|ping|alert|nudge)",
+        "location": "location_parser",
+        "recurring": "recurrence_parser"
+      },
+      "validation": {
+        "datetime_point": "future_or_relative",
+        "recurring": "valid_recurrence"
+      },
+      "confirm": {
+        "template": "Set reminder: \"{reminder_text}\" {when}?",
+        "requireConfirmation": false,
+        "showDetails": ["datetime", "recurring"]
+      },
+      "handler": "reminders.create",
+      "examples": [
+        "remind me to call John at 5pm",
+        "ping me in 2 hours",
+        "daily reminder to take vitamins"
+      ]
+    },
+    "create_note": {
+      "displayName": "Create Note",
+      "required": ["note_body"],
+      "optional": ["note_title", "tags", "folder"],
+      "defaults": {
+        "folder": "Quick Notes",
+        "tags": []
+      },
+      "parsers": {
+        "note_body": "after_keywords(note|jot|save|capture|document)",
+        "note_title": "first_line_or_generate",
+        "tags": "hashtag_extractor"
+      },
+      "validation": {
+        "note_body": "non_empty"
+      },
+      "confirm": {
+        "template": "Save note?",
+        "requireConfirmation": false,
+        "showDetails": ["preview"]
+      },
+      "handler": "notes.appendOrCreate",
+      "examples": [
+        "make a note about the product idea",
+        "jot down meeting action items",
+        "save this thought"
+      ]
+    },
+    "read_email": {
+      "displayName": "Read Emails",
+      "required": [],
+      "optional": ["email_from", "email_subject", "time_range", "label", "has_attachment", "is_unread"],
+      "defaults": {
+        "is_unread": false,
+        "time_range": "today"
+      },
+      "parsers": {
+        "email_from": "email_or_name_extractor",
+        "email_subject": "after_keywords(about|regarding|subject)",
+        "time_range": "chrono_window",
+        "label": "after_keywords(label|folder|in)"
+      },
+      "validation": {
+        "email_from": "valid_email_or_contact",
+        "time_range": "valid_time_range"
+      },
+      "confirm": {
+        "template": "Search emails {filters}?",
+        "requireConfirmation": false,
+        "showDetails": ["count", "preview"]
+      },
+      "handler": "email.read",
+      "requiresAuth": "gmail",
+      "examples": [
+        "check my emails",
+        "emails from Alice today",
+        "unread messages about the project"
+      ]
+    },
+    "send_email": {
+      "displayName": "Send Email",
+      "required": ["email_to"],
+      "optional": ["email_subject", "email_body", "email_cc", "attachments"],
+      "defaults": {
+        "email_subject": "No Subject",
+        "email_body": ""
+      },
+      "parsers": {
+        "email_to": "email_list_extractor",
+        "email_cc": "cc_extractor",
+        "email_subject": "after_keywords(subject|re|regarding)",
+        "email_body": "after_keywords(body|saying|message|write)"
+      },
+      "validation": {
+        "email_to": "valid_email_list",
+        "email_cc": "valid_email_list"
+      },
+      "confirm": {
+        "template": "Send email to {recipients}?",
+        "requireConfirmation": true,
+        "showDetails": ["to", "subject", "body_preview"]
+      },
+      "handler": "email.composeOrSend",
+      "examples": [
+        "email the team about the launch",
+        "send meeting notes to attendees",
+        "draft message to client"
+      ]
+    }
+  },
+  "handlers": {
+    "calendar.createEvent": { 
+      "module": "@kenny-assistant/mobile/services/calendar-service",
+      "method": "createEvent",
+      "requiresPermission": "calendar"
+    },
+    "reminders.create": { 
+      "module": "@kenny-assistant/mobile/services/reminder-service",
+      "method": "createReminder",
+      "requiresPermission": "reminders"
+    },
+    "notes.appendOrCreate": { 
+      "module": "@kenny-assistant/mobile/services/notes-service",
+      "method": "saveNote",
+      "requiresPermission": null
+    },
+    "email.read": { 
+      "module": "@kenny-assistant/backend/services/gmail-service",
+      "method": "searchEmails",
+      "requiresPermission": "gmail_auth"
+    },
+    "email.composeOrSend": { 
+      "module": "@kenny-assistant/mobile/services/email-service",
+      "method": "composeEmail",
+      "requiresPermission": null
+    }
+  },
+  "learning": {
+    "correctionStore": "supabase",
+    "correctionTable": "intent_corrections",
+    "embeddingModel": "@xenova/all-MiniLM-L6-v2",
+    "knnIndexSize": 1000,
+    "centroidUpdateRate": 10,
+    "retrainThreshold": 100,
+    "llmValidation": true
+  },
+  "fallbacks": {
+    "useLLMFallback": true,
+    "llmProvider": "unified",
+    "cacheTimeout": 3600,
+    "maxRetries": 2
+  },
+  "slotOverrides": {
+    "duration_patterns": {
+      "lunch": 60,
+      "standup": 15,
+      "one-on-one": 30,
+      "all-hands": 60,
+      "interview": 45,
+      "coffee": 30
+    },
+    "contact_aliases": {},
+    "location_mappings": {},
+    "common_corrections": {}
+  }
+}

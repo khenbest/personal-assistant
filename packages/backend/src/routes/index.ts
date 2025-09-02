@@ -5,6 +5,7 @@ import { taskRoutes } from './tasks';
 import { healthRoutes } from './health';
 import chatRoutes from './chat';
 import transcribeRoutes from './transcribe';
+import intentRoutes from './intent';
 
 export async function registerRoutes(fastify: FastifyInstance) {
   // Register all route modules
@@ -14,4 +15,5 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(taskRoutes, { prefix: '/api' });
   await fastify.register(chatRoutes);
   await fastify.register(transcribeRoutes);
+  await fastify.register(intentRoutes);
 }

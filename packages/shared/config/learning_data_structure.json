@@ -1,0 +1,80 @@
+{
+  "correction_schema": {
+    "id": "uuid",
+    "timestamp": "ISO-8601",
+    "user_id": "string",
+    "original_text": "string",
+    "predicted_intent": "string",
+    "predicted_confidence": "number",
+    "predicted_slots": "object",
+    "corrected_intent": "string",
+    "corrected_slots": "object",
+    "correction_type": "intent|slots|both",
+    "model_version": "string",
+    "embedding": "float[]",
+    "feedback_score": "number",
+    "applied_immediately": "boolean"
+  },
+  "knn_index_schema": {
+    "id": "uuid",
+    "text": "string",
+    "embedding": "float[]",
+    "intent": "string",
+    "confidence": "number",
+    "source": "training|correction|synthetic",
+    "created_at": "timestamp",
+    "usage_count": "number",
+    "last_used": "timestamp"
+  },
+  "centroid_schema": {
+    "intent": "string",
+    "centroid_vector": "float[]",
+    "sample_count": "number",
+    "last_updated": "timestamp",
+    "variance": "float",
+    "confidence_threshold": "number"
+  },
+  "slot_override_schema": {
+    "id": "uuid",
+    "pattern": "string|regex",
+    "slot_type": "string",
+    "extracted_value": "any",
+    "confidence": "number",
+    "source": "user|learned|default",
+    "usage_count": "number",
+    "created_at": "timestamp"
+  },
+  "model_metrics_schema": {
+    "model_version": "string",
+    "timestamp": "timestamp",
+    "intent_accuracy": "number",
+    "slot_accuracy": "number",
+    "average_confidence": "number",
+    "correction_rate": "number",
+    "intents_performance": {
+      "create_event": {
+        "precision": "number",
+        "recall": "number",
+        "f1_score": "number",
+        "sample_count": "number"
+      }
+    },
+    "confusion_matrix": "object",
+    "training_samples": "number",
+    "correction_samples": "number"
+  },
+  "supabase_tables": {
+    "intent_corrections": {
+      "sql": "CREATE TABLE intent_corrections (\n  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n  user_id TEXT NOT NULL,\n  original_text TEXT NOT NULL,\n  predicted_intent TEXT,\n  predicted_confidence FLOAT,\n  predicted_slots JSONB,\n  corrected_intent TEXT NOT NULL,\n  corrected_slots JSONB,\n  correction_type TEXT,\n  model_version TEXT,\n  embedding vector(384),\n  feedback_score INTEGER,\n  applied_immediately BOOLEAN DEFAULT false,\n  created_at TIMESTAMP DEFAULT NOW(),\n  CONSTRAINT valid_correction_type CHECK (correction_type IN ('intent', 'slots', 'both')),\n  INDEX idx_user_corrections ON intent_corrections(user_id, created_at DESC),\n  INDEX idx_intent_corrections ON intent_corrections(corrected_intent)\n);"
+    },
+    "knn_embeddings": {
+      "sql": "CREATE TABLE knn_embeddings (\n  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n  text TEXT NOT NULL,\n  embedding vector(384) NOT NULL,\n  intent TEXT NOT NULL,\n  confidence FLOAT,\n  source TEXT DEFAULT 'training',\n  usage_count INTEGER DEFAULT 0,\n  last_used TIMESTAMP,\n  created_at TIMESTAMP DEFAULT NOW(),\n  INDEX idx_embeddings ON knn_embeddings USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100),\n  INDEX idx_intent ON knn_embeddings(intent)\n);"
+    },
+    "intent_centroids": {
+      "sql": "CREATE TABLE intent_centroids (\n  intent TEXT PRIMARY KEY,\n  centroid vector(384) NOT NULL,\n  sample_count INTEGER DEFAULT 0,\n  variance FLOAT,\n  confidence_threshold FLOAT DEFAULT 0.7,\n  last_updated TIMESTAMP DEFAULT NOW()\n);"
+    },
+    "model_metrics": {
+      "sql": "CREATE TABLE model_metrics (\n  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n  model_version TEXT NOT NULL,\n  intent_accuracy FLOAT,\n  slot_accuracy FLOAT,\n  average_confidence FLOAT,\n  correction_rate FLOAT,\n  metrics_detail JSONB,\n  created_at TIMESTAMP DEFAULT NOW(),\n  INDEX idx_model_version ON model_metrics(model_version, created_at DESC)\n);"
+    }
+  }
+}
