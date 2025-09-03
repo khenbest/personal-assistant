@@ -217,8 +217,8 @@ if (!supabaseAnonKey || supabaseAnonKey.length < 20) {
   });
 }
 
-// Mock database for development when Supabase is not configured
-class MockDatabaseService {
+// In-memory database for development when Supabase is not configured
+class InMemoryDatabaseService {
   private conversations: Map<string, any> = new Map();
   private messages: Map<string, any> = new Map();
   private events: Map<string, any> = new Map();
@@ -413,4 +413,4 @@ export class DatabaseService {
 }
 
 // Use mock database if Supabase is not configured
-export const db = supabaseClient ? new DatabaseService() : new MockDatabaseService() as any;
+export const db = supabaseClient ? new DatabaseService() : new InMemoryDatabaseService() as any;

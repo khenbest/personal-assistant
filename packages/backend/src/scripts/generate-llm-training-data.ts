@@ -4,7 +4,7 @@
  * Creates 500+ diverse examples for intent classification
  */
 
-import { UnifiedLLMService } from '../services/unified-llm-service';
+import { LLMService } from '../services/llm-service';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -20,11 +20,11 @@ interface TrainingExample {
 }
 
 class LLMTrainingDataGenerator {
-  private llmService: UnifiedLLMService;
+  private llmService: LLMService;
   private intents = ['create_event', 'add_reminder', 'create_note', 'read_email', 'send_email'];
   
   constructor() {
-    this.llmService = new UnifiedLLMService();
+    this.llmService = new LLMService();
   }
 
   /**

@@ -999,3 +999,4 @@ increase the brightness,none
 who won the game last night,none
 open settings,none
 what's my battery percentage,none
+block out the next hour,create_event

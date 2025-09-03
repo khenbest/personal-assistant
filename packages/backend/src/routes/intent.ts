@@ -4,8 +4,7 @@
  */
 
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { IntentService } from '../services/intent-service';
-import { unifiedLLMService } from '../services/unified-llm-service';
+import { getIntentService, getLLMService } from '../services/singleton-service-registry';
 
 interface ClassifyBody {
   text: string;
@@ -22,8 +21,8 @@ interface CorrectionBody {
 }
 
 export default async function intentRoutes(fastify: FastifyInstance) {
-  // Initialize intent service with singleton LLM service
-  const intentService = new IntentService(unifiedLLMService);
+  // Get singleton intent service instance
+  const intentService = getIntentService();
 
   // Intent classification endpoint
   fastify.post<{ Body: ClassifyBody }>(
@@ -164,7 +163,8 @@ export default async function intentRoutes(fastify: FastifyInstance) {
   fastify.get('/api/intent/health', async (_request, reply) => {
     try {
       // Check if LLM service is healthy
-      const isHealthy = await unifiedLLMService.checkHealth();
+      const llmService = getLLMService();
+      const isHealthy = await llmService.checkHealth();
       
       return {
         success: true,

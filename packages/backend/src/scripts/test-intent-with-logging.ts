@@ -5,8 +5,8 @@
  */
 
 import { IntentService } from '../services/intent-service';
-import { UnifiedLLMService } from '../services/unified-llm-service';
-import { ClassificationLogger } from '../services/classification-logger';
+import { LLMService } from '../services/llm-service';
+import { IntentClassificationLoggerService } from '../services/classification-logger';
 import { TestDataGenerator, TestCase } from './generate-test-data';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -15,12 +15,12 @@ import path from 'path';
 dotenv.config({ path: path.join(__dirname, '../../../../.env') });
 
 class IntentTestRunner {
-  private intentService: IntentService;
-  private logger: ClassificationLogger;
-  private llmService: UnifiedLLMService;
+  private intentService: IntentClassificationService;
+  private logger: IntentClassificationLoggerService;
+  private llmService: LLMService;
 
   constructor() {
-    this.llmService = new UnifiedLLMService();
+    this.llmService = new LLMService();
     this.intentService = new IntentService(this.llmService);
     this.logger = new ClassificationLogger('v1.0.0');
   }

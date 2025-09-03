@@ -5,12 +5,14 @@
 
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { IntentService } from '../services/intent-service';
-import { CalendarService } from '../services/calendar-service';
-import { UnifiedLLMService } from '../services/unified-llm-service';
-import { TranscriptionService } from '../services/transcription-service';
 import { reminderService } from '../services/reminder-service';
 import { noteService } from '../services/note-service';
+import { 
+  getIntentService, 
+  getCalendarService, 
+  getVoiceService, 
+  getTranscriptionService 
+} from '../services/singleton-service-registry';
 
 const voiceCommandSchema = z.object({
   text: z.string(),
@@ -25,19 +27,15 @@ const correctionSchema = z.object({
   correctedSlots: z.record(z.any()),
 });
 
-// Initialize services
-const llmService = new UnifiedLLMService();
-const intentService = new IntentService(llmService);
-const calendarService = new CalendarService(intentService);
-const transcriptionService = new TranscriptionService(llmService);
+// Get singleton service instances
+const intentService = getIntentService();
+const calendarService = getCalendarService();
+const voiceProcessor = getVoiceService();
+const transcriptionService = getTranscriptionService();
 
 // Phase 2/3: Advanced orchestrator with conversation context and multi-step planning
 // import { LLMOrchestrator } from '../services/llm-orchestrator';
 // const orchestrator = new LLMOrchestrator();
-
-// Phase 1: Rules + kNN + immediate learning (per OVERVIEW.md)
-import { VoiceProcessor } from '../services/voice-processor';
-const voiceProcessor = new VoiceProcessor(intentService, calendarService);
 
 export async function voiceRoutes(fastify: FastifyInstance) {
   // NEW: Intelligent voice processing endpoint

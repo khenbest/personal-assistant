@@ -1,5 +1,5 @@
 /**
- * Local Intent Classification Service
+ * Offline Intent Classification Service
  * Uses ONLY local Ollama models for intent classification
  * Simple, fast, and completely offline
  */
@@ -15,7 +15,7 @@ export interface IntentResult {
   responseTime: number;
 }
 
-export class LocalIntentService {
+export class OfflineIntentClassificationService {
   // Simple rule-based patterns for fast, common cases
   private readonly patterns = {
     create_event: /\b(schedule|meeting|appointment|event|calendar)\b/i,
@@ -206,4 +206,4 @@ export class LocalIntentService {
 }
 
 // Export singleton instance
-export const intentService = new LocalIntentService();
+export const intentService = new OfflineIntentClassificationService();

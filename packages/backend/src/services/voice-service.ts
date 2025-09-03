@@ -4,7 +4,7 @@
  * Confidence gates: <0.81 confirm, ≥0.91 auto-execute
  */
 
-import { IntentService, IntentResult } from './intent-service';
+import { IntentService, IntentResult } from ./intent-classification-service.;
 import { CalendarService } from './calendar-service';
 import { reminderService } from './reminder-service';
 import { noteService } from './note-service';
@@ -40,8 +40,8 @@ interface ConversationSession {
   }>;
 }
 
-export class VoiceProcessor {
-  private intentService: IntentService;
+export class VoiceService {
+  private intentService: IntentClassificationService;
   private calendarService: CalendarService;
   private supabase: any;
   private sessions: Map<string, ConversationSession> = new Map();
@@ -50,7 +50,7 @@ export class VoiceProcessor {
   private readonly CONFIRM_THRESHOLD = 0.81;
   private readonly AUTO_EXECUTE_THRESHOLD = 0.91;
 
-  constructor(intentService: IntentService) {
+  constructor(intentService: IntentClassificationService) {
     this.intentService = intentService;
     this.calendarService = new CalendarService(intentService);
     
@@ -389,4 +389,4 @@ export class VoiceProcessor {
   }
 }
 
-export default VoiceProcessor;
+export default VoiceService;

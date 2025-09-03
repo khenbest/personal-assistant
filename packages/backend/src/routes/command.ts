@@ -1,8 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { IntentService } from '../services/intent-service';
-import { CalendarService } from '../services/calendar-service';
-import { UnifiedLLMService } from '../services/unified-llm-service';
+import { getIntentService, getCalendarService } from '../services/singleton-service-registry';
 import { db } from '../db/supabase';
 
 const commandSchema = z.object({
@@ -17,10 +15,9 @@ const querySchema = z.object({
   context: z.string().optional(),
 });
 
-// Initialize services
-const llmService = new UnifiedLLMService();
-const intentService = new IntentService(llmService);
-const calendarService = new CalendarService(intentService);
+// Get singleton service instances
+const intentService = getIntentService();
+const calendarService = getCalendarService();
 
 export async function commandRoutes(fastify: FastifyInstance) {
   // Process natural language commands with intent classification

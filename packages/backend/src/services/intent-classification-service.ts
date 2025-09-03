@@ -1,13 +1,13 @@
 /**
  * Intent Classification Service
- * Leverages existing UnifiedLLMService for immediate accuracy
+ * Leverages existing LLMService for immediate accuracy
  * Progressive enhancement with TF.js and learning capabilities
  */
 
-import { UnifiedLLMService } from './unified-llm-service';
+import { LLMService } from './llm-service';
 import * as chrono from 'chrono-node';
 import { createClient } from '@supabase/supabase-js';
-import { ClassificationLogger } from './classification-logger';
+import { IntentClassificationLoggerService } from ./intent-classification-logger-service.;
 import { intentCache } from './cache-service';
 import { accuracyTracker } from './accuracy-tracking-service';
 
@@ -31,16 +31,16 @@ export interface UserCorrection {
   correctedSlots: Record<string, any>;
 }
 
-export class IntentService {
+export class IntentClassificationService {
   private supabase;
   private intentRegistry: any;
   private knnIndex: Map<string, any[]> = new Map();
-  private logger: ClassificationLogger;
+  private logger: IntentClassificationLoggerService;
   // private centroids: Map<string, number[]> = new Map();
 
   constructor(
-    private llmService: UnifiedLLMService,
-    logger?: ClassificationLogger
+    private llmService: LLMService,
+    logger?: IntentClassificationLoggerService
   ) {
     // Initialize logger for tracking classifications
     this.logger = logger || new ClassificationLogger('v1.0.0');
@@ -492,17 +492,42 @@ export class IntentService {
   private async extractSlots(text: string, intent: string): Promise<Record<string, any>> {
     const slots: Record<string, any> = {};
 
-    // Extract datetime using chrono-node
-    const chronoResults = chrono.parse(text, new Date(), { forwardDate: true });
-    if (chronoResults.length > 0) {
-      const first = chronoResults[0];
-      if (first && first.start && first.end) {
-        slots.datetime_range = {
-          start: first.start.date().toISOString(),
-          end: first.end.date().toISOString()
-        };
-      } else if (first && first.start) {
-        slots.datetime_point = first.start.date().toISOString();
+    // Handle special cases for relative time phrases
+    const now = new Date();
+    const lowerText = text.toLowerCase();
+    
+    // Check for "next hour" or "next X hours" pattern
+    if (lowerText.includes('next hour') || lowerText.includes('the next hour')) {
+      slots.datetime_range = {
+        start: now.toISOString(),
+        end: new Date(now.getTime() + 60 * 60 * 1000).toISOString()
+      };
+      slots.duration_min = 60;
+    } else if (lowerText.includes('next 2 hours') || lowerText.includes('next two hours')) {
+      slots.datetime_range = {
+        start: now.toISOString(),
+        end: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString()
+      };
+      slots.duration_min = 120;
+    } else if (lowerText.includes('next 30 minutes') || lowerText.includes('next half hour')) {
+      slots.datetime_range = {
+        start: now.toISOString(),
+        end: new Date(now.getTime() + 30 * 60 * 1000).toISOString()
+      };
+      slots.duration_min = 30;
+    } else {
+      // Fall back to chrono-node for other patterns
+      const chronoResults = chrono.parse(text, now, { forwardDate: true });
+      if (chronoResults.length > 0) {
+        const first = chronoResults[0];
+        if (first && first.start && first.end) {
+          slots.datetime_range = {
+            start: first.start.date().toISOString(),
+            end: first.end.date().toISOString()
+          };
+        } else if (first && first.start) {
+          slots.datetime_point = first.start.date().toISOString();
+        }
       }
     }
 
@@ -517,20 +542,32 @@ export class IntentService {
       }
     }
 
-    // Extract duration
-    const durationMatch = text.match(/(\d+)\s*(hour|hr|minute|min)/i);
-    if (durationMatch) {
-      const value = parseInt(durationMatch[1] || '60');
-      const unit = (durationMatch[2] || 'minutes').toLowerCase();
-      slots.duration_min = unit.includes('hour') ? value * 60 : value;
+    // Extract duration (if not already set by relative time handling)
+    if (!slots.duration_min) {
+      const durationMatch = text.match(/(\d+)\s*(hour|hr|minute|min)/i);
+      if (durationMatch) {
+        const value = parseInt(durationMatch[1] || '60');
+        const unit = (durationMatch[2] || 'minutes').toLowerCase();
+        slots.duration_min = unit.includes('hour') ? value * 60 : value;
+      } else if (lowerText.includes('an hour') || lowerText.includes('one hour')) {
+        slots.duration_min = 60;
+      } else if (lowerText.includes('half hour') || lowerText.includes('30 minutes')) {
+        slots.duration_min = 30;
+      }
     }
 
     // Intent-specific extraction
     switch (intent) {
       case 'create_event':
-        // Extract title (text before/after time expressions)
-        const eventTitle = this.extractTitle(text, chronoResults);
-        if (eventTitle) slots.title = eventTitle;
+        // Extract title or use a default for blocking time
+        if (lowerText.includes('block out') || lowerText.includes('block time')) {
+          slots.title = slots.title || 'Blocked Time';
+        } else {
+          // Extract title (text before/after time expressions) 
+          const chronoResults = chrono.parse(text, now, { forwardDate: true });
+          const eventTitle = this.extractTitle(text, chronoResults);
+          if (eventTitle) slots.title = eventTitle;
+        }
         break;
 
       case 'add_reminder':
@@ -730,26 +767,30 @@ export class IntentService {
       const path = require('path');
       const { parse } = require('csv-parse/sync');
       
-      // Try multiple paths to find the training data
+      // Always use absolute path from project root
+      const trainingPath = '/Users/kenny/repos/personal-assistant/data/overview_data/intent_training.csv';
+      
+      // Also try hardcoded path as fallback
       const possiblePaths = [
-        path.join(__dirname, '../../../data/overview_data/intent_training.csv'),
-        path.join(__dirname, '../../../../data/overview_data/intent_training.csv'),
-        path.join(process.cwd(), 'data/overview_data/intent_training.csv'),
+        trainingPath,
         '/Users/kenny/repos/personal-assistant/data/overview_data/intent_training.csv'
       ];
       
       let trainingData: any[] = [];
       for (const csvPath of possiblePaths) {
         try {
+          // console.log(`🔍 Checking path: ${csvPath}`);
           const fileContent = await fs.readFile(csvPath, 'utf-8');
-          trainingData = parse(fileContent, {
+          // Clean the content to ensure proper line endings
+          const cleanContent = fileContent.trim() + '\n';
+          trainingData = parse(cleanContent, {
             columns: true,
             skip_empty_lines: true
           });
           console.log(`📚 Loading ${trainingData.length} training examples from ${csvPath}`);
           break;
-        } catch (err) {
-          // Try next path
+        } catch (err: any) {
+          console.log(`❌ Failed to load from ${csvPath}: ${err.message}`);
           continue;
         }
       }
@@ -761,12 +802,15 @@ export class IntentService {
       
       // Add training examples to kNN index
       for (const example of trainingData) {
-        const intent = example.intent;
+        const intent = example.intent?.trim();  // Trim any whitespace/newlines
+        const text = example.text?.trim();
+        if (!intent || !text) continue;
+        
         if (!this.knnIndex.has(intent)) {
           this.knnIndex.set(intent, []);
         }
         this.knnIndex.get(intent)!.push({
-          text: example.text,
+          text: text,
           slots: {} // Training data doesn't have slots, will be extracted
         });
       }
@@ -835,4 +879,4 @@ export class IntentService {
   }
 }
 
-export default IntentService;
+export default IntentClassificationService;

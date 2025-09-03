@@ -3,14 +3,14 @@
  * Get RAW LLM output to see EXACTLY what we need to parse
  */
 
-import { UnifiedLLMService } from '../services/unified-llm-service';
+import { LLMService } from '../services/llm-service';
 import dotenv from 'dotenv';
 import path from 'path';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 async function getRawOutput() {
-  const llmService = new UnifiedLLMService();
+  const llmService = new LLMService();
   
   const systemPrompt = `You are an intent classifier for a personal assistant.
     Classify the user's request into one of these intents:

@@ -40,7 +40,7 @@ export interface BulkTestResult {
   failurePatterns: FailurePattern[];
 }
 
-export class ClassificationLogger {
+export class IntentClassificationLoggerService {
   private currentTestRunId: string | null = null;
   private modelVersion: string = 'v1.0.0';
 

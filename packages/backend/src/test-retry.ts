@@ -3,10 +3,10 @@
  */
 
 import 'dotenv/config';
-import { UnifiedLLMService } from './services/unified-llm-service';
+import { LLMService } from './services/llm-service';
 
 // Create a new instance after loading env variables
-const unifiedLLMService = new UnifiedLLMService();
+const llmService = new LLMService();
 
 async function testRetryLogic() {
   console.log('🧪 Testing LLM retry logic...\n');
@@ -14,7 +14,7 @@ async function testRetryLogic() {
   // Test 1: Simple request that should work
   console.log('Test 1: Normal request');
   try {
-    const response1 = await unifiedLLMService.generateCompletion({
+    const response1 = await llmService.generateCompletion({
       prompt: 'What is 2+2?',
       maxTokens: 100,
       complexity: 'low'
@@ -32,7 +32,7 @@ async function testRetryLogic() {
   const promises = [];
   for (let i = 0; i < 5; i++) {
     promises.push(
-      unifiedLLMService.generateCompletion({
+      llmService.generateCompletion({
         prompt: `Calculate ${i} + ${i}`,
         maxTokens: 50,
         complexity: 'low'
@@ -60,7 +60,7 @@ async function testRetryLogic() {
   // Test 3: Complex request with DeepSeek formatting
   console.log('Test 3: Testing DeepSeek <think> tag removal');
   try {
-    const response3 = await unifiedLLMService.generateCompletion({
+    const response3 = await llmService.generateCompletion({
       prompt: 'Explain why the sky is blue in one sentence.',
       maxTokens: 200,
       complexity: 'medium'
@@ -75,7 +75,7 @@ async function testRetryLogic() {
 
   // Test 4: Check provider health and stats
   console.log('Test 4: Provider statistics');
-  const stats = unifiedLLMService.getProviderStats();
+  const stats = llmService.getProviderStats();
   stats.forEach(stat => {
     console.log(`   ${stat.name}:`);
     console.log(`     - Healthy: ${stat.healthy}`);

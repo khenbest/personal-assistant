@@ -6,7 +6,7 @@
 import * as chrono from 'chrono-node';
 import wink from 'wink-nlp';
 import model from 'wink-eng-lite-web-model';
-import { UnifiedLLMService } from './unified-llm-service';
+import { LLMService } from './llm-service';
 
 const nlp = wink(model);
 
@@ -38,10 +38,10 @@ export interface ExtractedSlots {
 }
 
 export class SlotExtractionService {
-  private llmService: UnifiedLLMService;
+  private llmService: LLMService;
   private slotOverrides: Map<string, any> = new Map();
   
-  constructor(llmService: UnifiedLLMService) {
+  constructor(llmService: LLMService) {
     this.llmService = llmService;
     this.loadSlotOverrides();
   }

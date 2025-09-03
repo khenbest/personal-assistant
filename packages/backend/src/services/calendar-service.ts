@@ -4,7 +4,7 @@
  * Integrates with IntentService and Supabase
  */
 
-import { IntentService } from './intent-service';
+import { IntentService } from ./intent-classification-service.;
 import { SlotExtractionService, ExtractedSlots } from './slot-extraction-service';
 import { supabase } from '../db/supabase';
 import * as chrono from 'chrono-node';
@@ -36,10 +36,10 @@ export interface ProcessResult {
 }
 
 export class CalendarService {
-  private intentService: IntentService;
+  private intentService: IntentClassificationService;
   private slotExtractor: SlotExtractionService;
 
-  constructor(intentService: IntentService) {
+  constructor(intentService: IntentClassificationService) {
     this.intentService = intentService;
     this.slotExtractor = new SlotExtractionService(intentService['llmService']);
   }

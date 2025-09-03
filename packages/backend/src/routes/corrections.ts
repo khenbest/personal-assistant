@@ -5,8 +5,7 @@
 
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { IntentService } from '../services/intent-service';
-import { UnifiedLLMService } from '../services/unified-llm-service';
+import { getIntentService } from '../services/singleton-service-registry';
 
 const correctionSchema = z.object({
   predictionId: z.string(),
@@ -23,9 +22,8 @@ const metricsQuerySchema = z.object({
   hours: z.string().optional(),
 });
 
-// Initialize services
-const llmService = new UnifiedLLMService();
-const intentService = new IntentService(llmService);
+// Get singleton intent service instance
+const intentService = getIntentService();
 
 export async function correctionRoutes(fastify: FastifyInstance) {
   // Apply user correction

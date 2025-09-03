@@ -4,8 +4,8 @@
  * No hard-coded thresholds - all intelligence is LLM-driven
  */
 
-import { UnifiedLLMService } from './unified-llm-service';
-import { IntentService } from './intent-service';
+import { LLMService } from './llm-service';
+import { IntentService } from ./intent-classification-service.;
 import { CalendarService } from './calendar-service';
 import { reminderService } from './reminder-service';
 import { noteService } from './note-service';
@@ -73,14 +73,14 @@ export interface VoiceResponse {
 }
 
 export class LLMOrchestrator {
-  private llmService: UnifiedLLMService;
-  private intentService: IntentService;
+  private llmService: LLMService;
+  private intentService: IntentClassificationService;
   private calendarService: CalendarService;
   private supabase: any;
   private conversationStore: Map<string, ConversationContext> = new Map();
 
   constructor() {
-    this.llmService = new UnifiedLLMService();
+    this.llmService = new LLMService();
     this.intentService = new IntentService(this.llmService);
     this.calendarService = new CalendarService(this.intentService);
     

@@ -4,7 +4,7 @@
  * Simple test for Ollama intent classification
  */
 
-import { unifiedLLMService } from '../services/unified-llm-service';
+import { llmService } from '../services/llm-service';
 
 const TEST_UTTERANCES = [
   { text: "remind me to call john tomorrow at 3pm", expected: "add_reminder" },
@@ -25,7 +25,7 @@ async function main() {
   console.log('Waiting for services to initialize...');
   await wait(2000);
   
-  const stats = unifiedLLMService.getProviderStats();
+  const stats = llmService.getProviderStats();
   console.log('Available providers:', stats.map(s => `${s.name}(${s.healthy ? 'healthy' : 'unhealthy'})`).join(', '));
   console.log();
   
@@ -34,7 +34,7 @@ async function main() {
   
   for (const test of TEST_UTTERANCES) {
     try {
-      const response = await unifiedLLMService.generateCompletion({
+      const response = await llmService.generateCompletion({
         prompt: `Classify this text into one of these intents: create_event, add_reminder, create_note, read_email, send_email.
 Text: "${test.text}"
 Respond with ONLY the intent name, nothing else.`,

@@ -2,10 +2,10 @@
 
 /**
  * Test script for Ollama-based intent classification
- * Tests both direct Ollama service and UnifiedLLMService integration
+ * Tests both direct Ollama service and LLMService integration
  */
 
-import { unifiedLLMService } from '../services/unified-llm-service';
+import { llmService } from '../services/llm-service';
 import { ollamaService } from '../services/ollama-service';
 
 const TEST_UTTERANCES = [
@@ -56,16 +56,16 @@ Respond with just the intent name.`;
 }
 
 async function testUnifiedService() {
-  console.log('\n🔬 Testing UnifiedLLMService with Ollama\n');
+  console.log('\n🔬 Testing LLMService with Ollama\n');
   
-  const stats = unifiedLLMService.getProviderStats();
+  const stats = llmService.getProviderStats();
   console.log('Available providers:', stats.map(s => `${s.name} (${s.healthy ? 'healthy' : 'unhealthy'})`).join(', '));
   
   for (const utterance of TEST_UTTERANCES.slice(0, 3)) { // Test first 3
     try {
       // const startTime = Date.now(); // Unused for now
       
-      const response = await unifiedLLMService.generateCompletion({
+      const response = await llmService.generateCompletion({
         prompt: `Classify this text into one of these intents: create_event, add_reminder, create_note, read_email, send_email.
 Text: "${utterance}"
 Respond with just the intent name.`,
@@ -98,7 +98,7 @@ async function main() {
     process.exit(1);
   }
   
-  // Test 2: Through UnifiedLLMService
+  // Test 2: Through LLMService
   await testUnifiedService();
   
   console.log('\n✨ Test complete!');

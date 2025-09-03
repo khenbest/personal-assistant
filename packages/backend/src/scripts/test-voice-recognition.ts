@@ -6,13 +6,13 @@
 
 import { IntentService } from '../services/intent-service';
 import { CalendarService } from '../services/calendar-service';
-import { UnifiedLLMService } from '../services/unified-llm-service';
+import { LLMService } from '../services/llm-service';
 import chalk from 'chalk';
 
 async function testVoiceCommands() {
   console.log(chalk.blue('🎤 Testing Voice Recognition Pipeline\n'));
   
-  const llmService = new UnifiedLLMService();
+  const llmService = new LLMService();
   const intentService = new IntentService(llmService);
   const calendarService = new CalendarService(intentService);
   

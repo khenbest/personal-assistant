@@ -3,7 +3,7 @@
  * Handles speech-to-text conversion using multiple providers
  */
 
-import { UnifiedLLMService } from './unified-llm-service';
+import { LLMService } from './llm-service';
 
 export interface TranscriptionResult {
   text: string;
@@ -13,9 +13,9 @@ export interface TranscriptionResult {
 }
 
 export class TranscriptionService {
-  // private llmService: UnifiedLLMService; // Currently unused
+  // private llmService: LLMService; // Currently unused
 
-  constructor(_llmService: UnifiedLLMService) {
+  constructor(_llmService: LLMService) {
     // this.llmService = llmService; // Store when needed
   }
 
