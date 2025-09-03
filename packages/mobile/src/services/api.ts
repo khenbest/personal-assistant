@@ -46,7 +46,73 @@ api.interceptors.response.use(
 );
 
 /**
- * Send voice command to backend
+ * NEW: Process voice command through intelligent orchestrator
+ * This replaces the old hard-coded threshold approach
+ */
+export async function processVoiceCommand(
+  text: string,
+  sessionId: string,
+  userId?: string
+) {
+  try {
+    const response = await api.post('/voice/process', {
+      text,
+      sessionId,
+      userId: userId || await getUserId(),
+    });
+    
+    return response.data;
+  } catch (error: any) {
+    console.error('Voice processing error:', error);
+    return {
+      success: false,
+      action: 'error',
+      response: {
+        speak: "I'm having trouble processing that. Please try again.",
+      },
+      metadata: {
+        intent: 'none',
+        confidence: 'low',
+        requiresConfirmation: false,
+        sessionId,
+      },
+      error: error.response?.data?.error || error.message || 'Network error',
+    };
+  }
+}
+
+/**
+ * Handle voice correction through orchestrator
+ */
+export async function handleVoiceCorrection(
+  sessionId: string,
+  correction: {
+    originalIntent: string;
+    correctedIntent: string;
+    originalSlots: Record<string, any>;
+    correctedSlots: Record<string, any>;
+    alwaysApply: boolean;
+  }
+) {
+  try {
+    const response = await api.post('/voice/correct', {
+      sessionId,
+      correction,
+    });
+    
+    return response.data;
+  } catch (error: any) {
+    console.error('Voice correction error:', error);
+    return {
+      success: false,
+      action: 'error',
+      error: error.response?.data?.error || error.message || 'Failed to apply correction',
+    };
+  }
+}
+
+/**
+ * DEPRECATED: Old voice command endpoint (keeping for backward compatibility)
  */
 export async function sendVoiceCommand(text: string, audioUri?: string | null) {
   try {
@@ -242,6 +308,52 @@ async function getUserId(): Promise<string> {
  */
 export function setApiBaseUrl(url: string) {
   api.defaults.baseURL = url;
+}
+
+/**
+ * Apply intent correction with learning
+ */
+export async function applyCorrection(correction: {
+  predictionId: string;
+  originalText: string;
+  predictedIntent: string;
+  correctedIntent: string;
+  predictedSlots?: any;
+  correctedSlots?: any;
+  alwaysDoThis?: boolean;
+}) {
+  try {
+    const response = await api.post('/corrections', {
+      ...correction,
+      userId: await getUserId(),
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Correction error:', error);
+    return {
+      success: false,
+      error: error.response?.data?.error || error.message || 'Failed to apply correction',
+    };
+  }
+}
+
+/**
+ * Get accuracy metrics
+ */
+export async function getAccuracyMetrics(hours: number = 24) {
+  try {
+    const response = await api.get('/corrections/metrics', {
+      params: { hours },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Metrics error:', error);
+    return {
+      success: false,
+      metrics: null,
+      error: error.response?.data?.error || error.message,
+    };
+  }
 }
 
 /**

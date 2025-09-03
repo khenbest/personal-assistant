@@ -9,15 +9,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useStore } from '../store';
-import { apiService } from '../services/api';
+import { processVoiceCommand } from '../services/api';
+import { VoiceInputSimplified } from '../components/VoiceInputSimplified';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Message {
   id: string;
@@ -31,8 +30,8 @@ export function MainScreen() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [showVoiceInput, setShowVoiceInput] = useState(false);
+  const [sessionId] = useState(() => uuidv4());
   const scrollViewRef = useRef<ScrollView>(null);
 
   const handleSend = async () => {
@@ -50,37 +49,37 @@ export function MainScreen() {
     setIsLoading(true);
 
     try {
-      const response = await apiService.sendCommand(input);
+      // Send to new intelligent backend
+      const response = await processVoiceCommand(input, sessionId);
       
+      let assistantContent = '';
+      
+      if (response.success) {
+        assistantContent = response.response?.speak || response.response?.display || 'Command processed.';
+        
+        // Speak the response
+        if (response.response?.speak) {
+          Speech.speak(response.response.speak, {
+            language: 'en-US',
+            rate: Platform.OS === 'ios' ? 0.95 : 1.0,
+          });
+        }
+      } else {
+        assistantContent = response.error || 'Sorry, I encountered an error.';
+      }
+
       const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: Date.now().toString(),
         role: 'assistant',
-        content: response.message || response.content,
+        content: assistantContent,
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, assistantMessage]);
       
-      // Speak the response
-      Speech.speak(assistantMessage.content, {
-        language: 'en-US',
-        rate: 0.9,
-      });
-
-      // Handle specific intents
-      if (response.intent === 'schedule' && response.event) {
-        Alert.alert(
-          'Event Created',
-          `${response.event.title} scheduled for ${new Date(response.event.start_time).toLocaleString()}`,
-          [
-            { text: 'View Calendar', onPress: () => navigation.navigate('Calendar' as never) },
-            { text: 'OK' },
-          ]
-        );
-      }
-    } catch (error) {
+    } catch (error: any) {
       const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: Date.now().toString(),
         role: 'assistant',
         content: 'Sorry, I encountered an error. Please try again.',
         timestamp: new Date(),
@@ -93,196 +92,82 @@ export function MainScreen() {
     }
   };
 
-  const startRecording = async () => {
-    try {
-      await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
+  const handleVoiceCommand = (result: any) => {
+    if (result.type === 'voice' && result.result?.success) {
+      // Add the voice command to messages
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: result.text,
+        timestamp: new Date(),
+      };
 
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      
-      setRecording(recording);
-      setIsRecording(true);
-    } catch (err) {
-      console.error('Failed to start recording', err);
-      Alert.alert('Error', 'Failed to start recording. Please check permissions.');
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: result.result.response?.speak || 'Command processed.',
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, userMessage, assistantMessage]);
+      scrollViewRef.current?.scrollToEnd({ animated: true });
     }
   };
 
-  const stopRecording = async () => {
-    if (!recording) return;
-
-    setIsRecording(false);
-    await recording.stopAndUnloadAsync();
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-    });
-
-    const uri = recording.getURI();
-    setRecording(null);
-
-    if (uri) {
-      try {
-        // Send audio to backend for transcription
-        const formData = new FormData();
-        formData.append('file', {
-          uri,
-          type: 'audio/m4a',
-          name: 'recording.m4a',
-        } as any);
-
-        const transcribeResponse = await fetch(`${Platform.select({
-          ios: 'http://localhost:3000',
-          android: 'http://10.0.2.2:3000',
-          default: 'http://localhost:3000',
-        })}/api/transcribe`, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-
-        if (!transcribeResponse.ok) {
-          throw new Error('Transcription failed');
-        }
-
-        const { text } = await transcribeResponse.json();
-        
-        // Set the transcribed text in the input field
-        setInput(text);
-        
-        // Automatically send it as a command
-        const userMessage: Message = {
-          id: Date.now().toString(),
-          role: 'user',
-          content: text,
-          timestamp: new Date(),
-        };
-
-        setMessages(prev => [...prev, userMessage]);
-        setIsLoading(true);
-
-        // Send to command endpoint
-        const response = await apiService.sendCommand(text);
-        
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: response.message || response.content,
-          timestamp: new Date(),
-        };
-
-        setMessages(prev => [...prev, assistantMessage]);
-        
-        // Speak the response
-        Speech.speak(assistantMessage.content, {
-          language: 'en-US',
-          rate: 0.9,
-        });
-
-        // Handle specific intents
-        if (response.intent === 'schedule' && response.event) {
-          Alert.alert(
-            'Event Created',
-            `${response.event.title} scheduled for ${new Date(response.event.start_time).toLocaleString()}`,
-            [
-              { text: 'View Calendar', onPress: () => navigation.navigate('Calendar' as never) },
-              { text: 'OK' },
-            ]
-          );
-        } else if (response.intent === 'task' && response.task) {
-          Alert.alert(
-            'Task Created',
-            `${response.task.title} has been added to your tasks`,
-            [
-              { text: 'View Tasks', onPress: () => navigation.navigate('Tasks' as never) },
-              { text: 'OK' },
-            ]
-          );
-        }
-
-        setIsLoading(false);
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      } catch (error) {
-        console.error('Error processing voice input:', error);
-        Alert.alert('Error', 'Failed to process voice input. Please try again.');
-        setIsLoading(false);
-      }
-    }
-  };
+  const renderMessage = (message: Message) => (
+    <View
+      key={message.id}
+      style={[
+        styles.messageContainer,
+        message.role === 'user' ? styles.userMessage : styles.assistantMessage,
+      ]}
+    >
+      <Text
+        style={[
+          styles.messageText,
+          message.role === 'user' ? styles.userMessageText : styles.assistantMessageText,
+        ]}
+      >
+        {message.content}
+      </Text>
+      <Text style={styles.timestamp}>
+        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      </Text>
+    </View>
+  );
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <KeyboardAvoidingView 
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        {/* Quick Actions Bar */}
-        <View style={styles.quickActions}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('Calendar' as never)}
-          >
-            <Ionicons name="calendar" size={24} color="#007AFF" />
-            <Text style={styles.actionText}>Calendar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('Tasks' as never)}
-          >
-            <Ionicons name="checkbox" size={24} color="#007AFF" />
-            <Text style={styles.actionText}>Tasks</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('Settings' as never)}
-          >
-            <Ionicons name="settings" size={24} color="#007AFF" />
-            <Text style={styles.actionText}>Settings</Text>
-          </TouchableOpacity>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Kenny Assistant</Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Settings' as never)}
+          style={styles.settingsButton}
+        >
+          <Ionicons name="settings-outline" size={24} color="#333" />
+        </TouchableOpacity>
+      </View>
 
-        {/* Messages */}
-        <ScrollView 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.content}
+        keyboardVerticalOffset={100}
+      >
+        <ScrollView
           ref={scrollViewRef}
           style={styles.messagesContainer}
           contentContainerStyle={styles.messagesContent}
+          showsVerticalScrollIndicator={false}
         >
           {messages.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="chatbubbles-outline" size={64} color="#C7C7CC" />
+              <Ionicons name="chatbubbles-outline" size={64} color="#ccc" />
               <Text style={styles.emptyStateText}>
-                Hi! I'm Kenny, your personal assistant.
-              </Text>
-              <Text style={styles.emptyStateSubtext}>
-                Try saying "Schedule a meeting tomorrow at 3pm"
+                Start a conversation by typing or using voice
               </Text>
             </View>
           ) : (
-            messages.map((message) => (
-              <View
-                key={message.id}
-                style={[
-                  styles.messageBubble,
-                  message.role === 'user' ? styles.userMessage : styles.assistantMessage,
-                ]}
-              >
-                <Text style={[
-                  styles.messageText,
-                  message.role === 'user' ? styles.userMessageText : styles.assistantMessageText,
-                ]}>
-                  {message.content}
-                </Text>
-                <Text style={styles.messageTime}>
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-              </View>
-            ))
+            messages.map(renderMessage)
           )}
           {isLoading && (
             <View style={styles.loadingContainer}>
@@ -291,38 +176,53 @@ export function MainScreen() {
           )}
         </ScrollView>
 
-        {/* Input Bar */}
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={[styles.textInput, { maxHeight: 100 }]}
-            value={input}
-            onChangeText={setInput}
-            placeholder="Type a message or tap the mic..."
-            placeholderTextColor="#8E8E93"
-            multiline
-            onSubmitEditing={handleSend}
-            editable={!isLoading}
-          />
-          <TouchableOpacity
-            style={[styles.micButton, isRecording && styles.micButtonRecording]}
-            onPressIn={startRecording}
-            onPressOut={stopRecording}
-            disabled={isLoading}
-          >
-            <Ionicons 
-              name={isRecording ? "mic" : "mic-outline"} 
-              size={24} 
-              color={isRecording ? "#FF3B30" : "#007AFF"} 
+        {showVoiceInput ? (
+          <View style={styles.voiceInputContainer}>
+            <VoiceInputSimplified 
+              onCommand={handleVoiceCommand}
+              showTextInput={false}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.sendButton, (!input.trim() || isLoading) && styles.sendButtonDisabled]}
-            onPress={handleSend}
-            disabled={!input.trim() || isLoading}
-          >
-            <Ionicons name="send" size={20} color="white" />
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              onPress={() => setShowVoiceInput(false)}
+              style={styles.closeVoiceButton}
+            >
+              <Text style={styles.closeVoiceText}>Use Keyboard</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.textInput, { maxHeight: 100 }]}
+              value={input}
+              onChangeText={setInput}
+              placeholder="Type a message..."
+              placeholderTextColor="#999"
+              multiline
+              onSubmitEditing={handleSend}
+            />
+            <TouchableOpacity
+              onPress={() => setShowVoiceInput(true)}
+              style={styles.voiceButton}
+            >
+              <Ionicons 
+                name="mic" 
+                size={24} 
+                color="#007AFF" 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleSend}
+              style={[styles.sendButton, !input.trim() && styles.sendButtonDisabled]}
+              disabled={!input.trim() || isLoading}
+            >
+              <Ionicons 
+                name="send" 
+                size={20} 
+                color={input.trim() ? '#007AFF' : '#ccc'} 
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -331,54 +231,40 @@ export function MainScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#f5f5f5',
   },
-  quickActions: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
     backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: '#e0e0e0',
   },
-  actionButton: {
-    alignItems: 'center',
-    padding: 5,
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
   },
-  actionText: {
-    fontSize: 12,
-    color: '#007AFF',
-    marginTop: 4,
+  settingsButton: {
+    padding: 8,
+  },
+  content: {
+    flex: 1,
   },
   messagesContainer: {
     flex: 1,
   },
   messagesContent: {
     padding: 16,
+    paddingBottom: 20,
   },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 100,
-  },
-  emptyStateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1C1C1E',
-    marginTop: 16,
-  },
-  emptyStateSubtext: {
-    fontSize: 14,
-    color: '#8E8E93',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  messageBubble: {
+  messageContainer: {
     maxWidth: '80%',
-    marginVertical: 4,
+    marginBottom: 12,
     padding: 12,
-    borderRadius: 18,
+    borderRadius: 16,
   },
   userMessage: {
     alignSelf: 'flex-end',
@@ -390,62 +276,83 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   userMessageText: {
     color: 'white',
   },
   assistantMessageText: {
-    color: '#1C1C1E',
+    color: '#333',
   },
-  messageTime: {
-    fontSize: 11,
+  timestamp: {
+    fontSize: 12,
     marginTop: 4,
     opacity: 0.7,
   },
-  loadingContainer: {
-    padding: 20,
+  emptyState: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 100,
+  },
+  emptyStateText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    alignSelf: 'flex-start',
+    padding: 16,
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
+    alignItems: 'flex-end',
+    padding: 16,
     backgroundColor: 'white',
     borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
-    alignItems: 'flex-end',
+    borderTopColor: '#e0e0e0',
   },
   textInput: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    fontSize: 16,
+    minHeight: 40,
     maxHeight: 100,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 20,
+    fontSize: 16,
     marginRight: 8,
   },
-  micButton: {
+  voiceButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 8,
-  },
-  micButtonRecording: {
-    backgroundColor: '#FFE5E5',
   },
   sendButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   sendButtonDisabled: {
     opacity: 0.5,
+  },
+  voiceInputContainer: {
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    paddingBottom: 20,
+  },
+  closeVoiceButton: {
+    alignSelf: 'center',
+    marginTop: 10,
+    padding: 10,
+  },
+  closeVoiceText: {
+    color: '#007AFF',
+    fontSize: 16,
   },
 });

@@ -26,46 +26,93 @@ export class OllamaService {
   private fallbackModel: string = 'llama3.2:3b';  // 2GB, more capable
   private isHealthy: boolean = false;
   private modelAvailability: Map<string, boolean> = new Map();
+  
+  // Configuration from environment variables
+  private readonly warmupTimeout: number;
+  private readonly inferenceTimeout: number;
+  private readonly enableWarmup: boolean;
+  private readonly warmupModels: string[];
+  private readonly maxRetries: number;
+  private readonly retryDelayMs: number;
 
   constructor(baseUrl: string = 'http://localhost:11434') {
     this.baseUrl = baseUrl;
+    
+    // Load configuration from environment variables
+    this.warmupTimeout = parseInt(process.env.OLLAMA_WARMUP_TIMEOUT || '60000', 10); // 60s default
+    this.inferenceTimeout = parseInt(process.env.OLLAMA_INFERENCE_TIMEOUT || '30000', 10); // 30s default
+    this.enableWarmup = process.env.OLLAMA_ENABLE_WARMUP !== 'false'; // true by default
+    this.warmupModels = process.env.OLLAMA_WARMUP_MODELS?.split(',').map(m => m.trim()) || [];
+    this.maxRetries = parseInt(process.env.OLLAMA_MAX_RETRIES || '3', 10);
+    this.retryDelayMs = parseInt(process.env.OLLAMA_RETRY_DELAY_MS || '1000', 10);
+    
     this.checkHealth();
   }
 
   /**
-   * Generate completion with automatic fallback
+   * Generate completion with automatic fallback and retry logic
    */
   async generateCompletion(request: OllamaRequest): Promise<OllamaResponse> {
-    // Try primary model first (Qwen)
-    try {
-      if (this.modelAvailability.get(this.primaryModel)) {
-        return await this.callOllama(this.primaryModel, request);
+    // Try primary model first (Qwen) with retry
+    if (this.modelAvailability.get(this.primaryModel)) {
+      try {
+        return await this.callWithRetry(this.primaryModel, request);
+      } catch (error) {
+        console.warn(`Primary model ${this.primaryModel} failed after retries:`, error);
       }
-    } catch (error) {
-      console.warn(`Primary model ${this.primaryModel} failed:`, error);
     }
 
-    // Fallback to Llama
-    try {
-      if (this.modelAvailability.get(this.fallbackModel)) {
+    // Fallback to Llama with retry
+    if (this.modelAvailability.get(this.fallbackModel)) {
+      try {
         console.log('Falling back to Llama3.2:3b');
-        return await this.callOllama(this.fallbackModel, request);
+        return await this.callWithRetry(this.fallbackModel, request);
+      } catch (error) {
+        console.error(`Fallback model ${this.fallbackModel} failed after retries:`, error);
+        throw new Error('All Ollama models failed. Is Ollama running?');
       }
-    } catch (error) {
-      console.error(`Fallback model ${this.fallbackModel} failed:`, error);
-      throw new Error('All Ollama models failed. Is Ollama running?');
     }
 
     throw new Error('No Ollama models available');
+  }
+  
+  /**
+   * Call Ollama with retry logic for production requests
+   */
+  private async callWithRetry(model: string, request: OllamaRequest): Promise<OllamaResponse> {
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt < this.maxRetries; attempt++) {
+      try {
+        return await this.callOllama(model, request, false);
+      } catch (error) {
+        lastError = error as Error;
+        
+        // Don't retry for certain errors
+        if (lastError.message.includes('not found') || 
+            lastError.message.includes('No Ollama models')) {
+          throw lastError;
+        }
+        
+        if (attempt < this.maxRetries - 1) {
+          const delay = this.retryDelayMs * Math.pow(2, attempt);
+          console.warn(`⚠️  Request attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+          await this.delay(delay);
+        }
+      }
+    }
+    
+    throw lastError || new Error('Failed after retries');
   }
 
   /**
    * Call Ollama API with specific model
    */
-  private async callOllama(model: string, request: OllamaRequest): Promise<OllamaResponse> {
+  private async callOllama(model: string, request: OllamaRequest, isWarmup: boolean = false): Promise<OllamaResponse> {
     const startTime = Date.now();
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout for first inference (model loading)
+    const timeoutMs = isWarmup ? this.warmupTimeout : this.inferenceTimeout;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       // Build the prompt with optional system message
@@ -110,7 +157,7 @@ export class OllamaService {
       };
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        throw new Error(`Ollama timeout after 15 seconds`);
+        throw new Error(`Ollama timeout after ${timeoutMs / 1000} seconds`);
       }
       throw error;
     } finally {
@@ -168,22 +215,88 @@ export class OllamaService {
   }
 
   /**
-   * Warm up models by sending a test request
+   * Warm up models with retry logic and selective loading
    */
   async warmUp(): Promise<void> {
+    if (!this.enableWarmup) {
+      console.log('🔧 Model warm-up disabled via OLLAMA_ENABLE_WARMUP=false');
+      return;
+    }
+
     const testPrompt = 'Respond with: OK';
+    const modelsToWarmup = this.getModelsToWarmup();
     
+    if (modelsToWarmup.length === 0) {
+      console.log('⚠️  No models available for warm-up');
+      return;
+    }
+    
+    console.log(`🔥 Warming up models: ${modelsToWarmup.join(', ')}`);
+    
+    for (const model of modelsToWarmup) {
+      await this.warmUpWithRetry(model, testPrompt);
+    }
+  }
+  
+  /**
+   * Determine which models should be warmed up
+   */
+  private getModelsToWarmup(): string[] {
+    const models: string[] = [];
+    
+    // If specific models are configured, use only those
+    if (this.warmupModels.length > 0) {
+      for (const model of this.warmupModels) {
+        if (this.modelAvailability.get(model)) {
+          models.push(model);
+        } else {
+          console.warn(`⚠️  Configured warm-up model ${model} not available`);
+        }
+      }
+      return models;
+    }
+    
+    // Otherwise, warm up all available models
     for (const [model, available] of this.modelAvailability.entries()) {
       if (available) {
-        try {
-          console.log(`Warming up ${model}...`);
-          await this.callOllama(model, { prompt: testPrompt, maxTokens: 5 });
-          console.log(`✅ ${model} ready`);
-        } catch (error) {
-          console.warn(`⚠️  Failed to warm up ${model}:`, error);
+        models.push(model);
+      }
+    }
+    
+    return models;
+  }
+  
+  /**
+   * Warm up a single model with exponential backoff retry
+   */
+  private async warmUpWithRetry(model: string, testPrompt: string): Promise<void> {
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt < this.maxRetries; attempt++) {
+      try {
+        console.log(`Warming up ${model} (attempt ${attempt + 1}/${this.maxRetries})...`);
+        await this.callOllama(model, { prompt: testPrompt, maxTokens: 5 }, true);
+        console.log(`✅ ${model} ready`);
+        return; // Success!
+      } catch (error) {
+        lastError = error as Error;
+        
+        if (attempt < this.maxRetries - 1) {
+          const delay = this.retryDelayMs * Math.pow(2, attempt); // Exponential backoff
+          console.warn(`⚠️  Warm-up attempt ${attempt + 1} failed for ${model}, retrying in ${delay}ms...`);
+          await this.delay(delay);
         }
       }
     }
+    
+    console.error(`❌ Failed to warm up ${model} after ${this.maxRetries} attempts:`, lastError);
+  }
+  
+  /**
+   * Helper function for delays
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**

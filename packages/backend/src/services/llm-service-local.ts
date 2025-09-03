@@ -42,8 +42,11 @@ export class LocalLLMService {
     
     console.log('✅ Local LLM Service initialized with Ollama');
     
-    // Warm up models for faster first inference
-    await ollamaService.warmUp();
+    // Warm up models for faster first inference (non-blocking)
+    ollamaService.warmUp().catch(error => {
+      console.warn('⚠️  Model warm-up encountered issues:', error);
+      console.log('🔧 Models will be loaded on first use');
+    });
   }
 
   /**

@@ -1,31 +1,18 @@
+/**
+ * Voice Service
+ * Handles Text-to-Speech ONLY
+ * Speech-to-Text is handled by expo-speech-recognition in components
+ */
+
 import * as Speech from 'expo-speech';
-import { Audio } from 'expo-av';
 import { Platform } from 'react-native';
 
 class VoiceService {
-  private recording: Audio.Recording | null = null;
-  private isRecording = false;
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-  constructor() {
-    this.setupAudioMode();
-  }
-
-  private async setupAudioMode() {
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-    } catch (error) {
-      console.error('Failed to setup audio mode:', error);
-    }
-  }
-
-  // Text to Speech
+  /**
+   * Text to Speech - Speak text aloud
+   */
   async speak(text: string, options?: Speech.SpeechOptions) {
     try {
       const defaultOptions: Speech.SpeechOptions = {
@@ -35,13 +22,16 @@ class VoiceService {
         ...options,
       };
       
-      await Speech.speak(text, defaultOptions);
+      Speech.speak(text, defaultOptions);
     } catch (error) {
       console.error('Speech error:', error);
       throw error;
     }
   }
 
+  /**
+   * Stop speaking
+   */
   async stopSpeaking() {
     try {
       await Speech.stop();
@@ -50,82 +40,61 @@ class VoiceService {
     }
   }
 
-  // Speech to Text (Recording)
-  async startRecording(): Promise<void> {
+  /**
+   * Check if currently speaking
+   */
+  async isSpeaking(): Promise<boolean> {
     try {
-      const permission = await Audio.requestPermissionsAsync();
-      if (!permission.granted) {
-        throw new Error('Microphone permission not granted');
-      }
-
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-
-      this.recording = recording;
-      this.isRecording = true;
+      return await Speech.isSpeakingAsync();
     } catch (error) {
-      console.error('Failed to start recording:', error);
-      throw error;
+      console.error('Error checking speech status:', error);
+      return false;
     }
   }
 
-  async stopRecording(): Promise<string> {
-    if (!this.recording) {
-      throw new Error('No recording in progress');
-    }
-
+  /**
+   * Get available voices
+   */
+  async getAvailableVoices() {
     try {
-      await this.recording.stopAndUnloadAsync();
-      const uri = this.recording.getURI();
-      this.recording = null;
-      this.isRecording = false;
-
-      if (!uri) {
-        throw new Error('No recording URI available');
-      }
-
-      // For now, we'll send a mock transcription
-      // In production, this would send the audio to a transcription service
-      return await this.mockTranscription(uri);
+      return await Speech.getAvailableVoicesAsync();
     } catch (error) {
-      console.error('Failed to stop recording:', error);
-      throw error;
+      console.error('Error getting voices:', error);
+      return [];
     }
   }
 
-  private async mockTranscription(audioUri: string): Promise<string> {
-    // Simulate transcription delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Return a mock transcription for testing
-    const mockPhrases = [
-      "What's on my calendar today?",
-      "Schedule a meeting for tomorrow at 3pm",
-      "Remind me to call John at 5pm",
-      "What's the weather like today?",
-      "Create a new task for the project",
-    ];
-    
-    return mockPhrases[Math.floor(Math.random() * mockPhrases.length)];
+  /**
+   * Speak with specific voice
+   */
+  async speakWithVoice(text: string, voiceId?: string) {
+    const options: Speech.SpeechOptions = {
+      language: 'en-US',
+      pitch: 1.0,
+      rate: Platform.OS === 'ios' ? 0.95 : 1.0,
+    };
+
+    if (voiceId) {
+      options.voice = voiceId;
+    }
+
+    await this.speak(text, options);
   }
 
-  // Send message to backend and get LLM response
-  async processMessage(text: string): Promise<string> {
+  /**
+   * Process message with backend LLM (text only, no audio)
+   */
+  async processMessage(text: string, sessionId: string, userId?: string): Promise<any> {
     try {
-      const response = await fetch(`${this.apiUrl}/api/chat`, {
+      const response = await fetch(`${this.apiUrl}/voice/process`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: text,
-          userId: 'user_1', // In production, use actual user ID
+          text,
+          sessionId,
+          userId: userId || 'demo-user',
         }),
       });
 
@@ -134,38 +103,43 @@ class VoiceService {
       }
 
       const data = await response.json();
-      return data.response || "I couldn't process that request.";
+      return data;
     } catch (error) {
       console.error('Error processing message:', error);
-      // Fallback to a simple response if backend is unavailable
-      return this.getSimpleResponse(text);
+      // Return error response in expected format
+      return {
+        success: false,
+        action: 'error',
+        response: {
+          speak: "I couldn't process that request. Please try again.",
+        },
+        metadata: {
+          intent: 'none',
+          confidence: 'low',
+          requiresConfirmation: false,
+          sessionId,
+        },
+      };
     }
   }
 
-  private getSimpleResponse(text: string): string {
+  /**
+   * Simple offline response fallback
+   */
+  getOfflineResponse(text: string): string {
     const lowerText = text.toLowerCase();
     
     if (lowerText.includes('calendar') || lowerText.includes('schedule')) {
-      return "You have 3 meetings today. Your next meeting is at 2 PM with the team.";
+      return "I'm offline right now, but I'll help you with your calendar when I'm back online.";
     } else if (lowerText.includes('weather')) {
-      return "It's currently 72 degrees and sunny. Perfect day for outdoor activities!";
-    } else if (lowerText.includes('task') || lowerText.includes('todo')) {
-      return "You have 5 pending tasks. The highest priority is finishing the project proposal.";
+      return "I need to be online to check the weather for you.";
     } else if (lowerText.includes('remind')) {
-      return "I've set a reminder for you. You'll be notified at the specified time.";
+      return "I'll set that reminder as soon as I'm back online.";
     } else if (lowerText.includes('hello') || lowerText.includes('hi')) {
-      return "Hello! How can I assist you today?";
+      return "Hello! I'm currently offline but I'll be able to help you soon.";
     } else {
-      return "I understand you said: " + text + ". How can I help you with that?";
+      return "I understand you said: " + text + ". I'll help you with that once I'm online.";
     }
-  }
-
-  isCurrentlyRecording(): boolean {
-    return this.isRecording;
-  }
-
-  isSpeaking(): boolean {
-    return Speech.isSpeakingAsync() as unknown as boolean;
   }
 }
 

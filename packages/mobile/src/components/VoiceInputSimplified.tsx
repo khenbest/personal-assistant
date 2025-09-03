@@ -1,6 +1,7 @@
 /**
- * Voice Input Component
- * Handles voice recording and command processing with TTS feedback
+ * Simplified Voice Input Component
+ * A thin presentation layer that delegates ALL intelligence to the backend
+ * NO hard-coded thresholds, NO business logic, just UI
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -14,6 +15,7 @@ import {
   Animated,
   Alert,
   AccessibilityInfo,
+  Modal,
 } from 'react-native';
 import * as Speech from 'expo-speech';
 import {
@@ -21,25 +23,25 @@ import {
   useSpeechRecognitionEvent,
 } from 'expo-speech-recognition';
 import { Ionicons } from '@expo/vector-icons';
-import { sendVoiceCommand, sendTextCommand, applyCorrection } from '../services/api';
-import { CorrectionModal, CorrectionData } from './CorrectionModal';
+import { processVoiceCommand, handleVoiceCorrection } from '../services/api';
+import { v4 as uuidv4 } from 'uuid';
 
 interface VoiceInputProps {
   onCommand: (result: any) => void;
   showTextInput?: boolean;
 }
 
-export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps) {
+export function VoiceInputSimplified({ onCommand, showTextInput = false }: VoiceInputProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [inputMode, setInputMode] = useState<'voice' | 'text'>('voice');
   const [textInput, setTextInput] = useState('');
   const [permissionGranted, setPermissionGranted] = useState(false);
-  const [speechPermissionGranted, setSpeechPermissionGranted] = useState(false);
   const [recordingAnimation] = useState(new Animated.Value(1));
   const [transcribedText, setTranscribedText] = useState('');
-  const [showCorrectionModal, setShowCorrectionModal] = useState(false);
-  const [correctionData, setCorrectionData] = useState<CorrectionData | null>(null);
+  const [sessionId] = useState(() => uuidv4()); // Generate session ID once
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmationData, setConfirmationData] = useState<any>(null);
   
   // Set up speech recognition event listeners
   useSpeechRecognitionEvent('result', (event: any) => {
@@ -63,18 +65,15 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
 
   useSpeechRecognitionEvent('end', () => {
     console.log('Speech recognition ended');
-    // Automatically process when speech ends
     if (isRecording && transcribedText) {
       stopRecording();
     }
   });
 
   useEffect(() => {
-    // Check and request permissions on mount
     checkPermissions();
     
     return () => {
-      // Cleanup on unmount - stop speech recognition if active
       ExpoSpeechRecognitionModule.stop().catch(() => {});
     };
   }, []);
@@ -103,12 +102,10 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
 
   const checkPermissions = async () => {
     try {
-      // Check speech recognition permission
-      const { status: speechStatus } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-      setSpeechPermissionGranted(speechStatus === 'granted');
-      setPermissionGranted(speechStatus === 'granted');
+      const { status } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      setPermissionGranted(status === 'granted');
       
-      if (speechStatus !== 'granted') {
+      if (status !== 'granted') {
         Alert.alert(
           'Permissions Required',
           'Please grant microphone and speech recognition access to use voice commands.',
@@ -121,19 +118,15 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
   };
 
   const startRecording = async () => {
-    if (!permissionGranted || !speechPermissionGranted) {
+    if (!permissionGranted) {
       await checkPermissions();
       return;
     }
 
     try {
-      // Stop any ongoing TTS
       await Speech.stop();
-      
-      // Clear previous transcription
       setTranscribedText('');
       
-      // Start speech recognition
       const { isRecognitionAvailable } = await ExpoSpeechRecognitionModule.isRecognitionAvailable();
       
       if (isRecognitionAvailable) {
@@ -144,20 +137,13 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
           continuous: false,
           requiresOnDeviceRecognition: false,
           addsPunctuation: true,
-          contextualStrings: [
-            'Schedule', 'meeting', 'appointment', 'tomorrow', 'calendar',
-            'remind', 'reminder', 'task', 'note', 'email'
-          ],
         });
         
         setIsRecording(true);
-        
-        // Announce to screen readers
         AccessibilityInfo.announceForAccessibility('Recording started');
       } else {
         Alert.alert('Speech Recognition Unavailable', 'Speech recognition is not available on this device.');
       }
-      
     } catch (error) {
       console.error('Failed to start recording:', error);
       Alert.alert('Recording Error', 'Failed to start recording. Please try again.');
@@ -171,13 +157,9 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
       setIsRecording(false);
       setIsProcessing(true);
       
-      // Stop speech recognition
       await ExpoSpeechRecognitionModule.stop();
-      
-      // Announce to screen readers
       AccessibilityInfo.announceForAccessibility('Processing your command');
       
-      // Use the transcribed text
       const finalTranscription = transcribedText;
       
       if (!finalTranscription || finalTranscription.trim() === '') {
@@ -186,69 +168,110 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
         return;
       }
       
-      // Send to backend
-      const result = await sendVoiceCommand(finalTranscription);
+      // Send to the NEW intelligent backend endpoint
+      // The backend decides EVERYTHING - no thresholds here!
+      const result = await processVoiceCommand(
+        finalTranscription,
+        sessionId
+      );
       
-      if (result.success) {
-        // Check confidence and show correction modal if needed
-        const confidence = result.confidence || 0;
-        const predictionId = result.metadata?.predictionId;
-        
-        if (confidence < 0.91 && result.intent !== 'none') {
-          // Show correction modal for low/medium confidence
-          setCorrectionData({
-            predictionId,
-            originalText: finalTranscription,
-            predictedIntent: result.intent,
-            predictedSlots: result.slots || {},
-            confidence,
-            event: result.event,
-          });
-          setShowCorrectionModal(true);
-          
-          // Speak but mention it needs confirmation
-          if (result.spokenResponse) {
-            const confirmMessage = confidence < 0.81 
-              ? "I think " + result.spokenResponse + " Is this correct?"
-              : result.spokenResponse + " Please confirm.";
-            await Speech.speak(confirmMessage, {
-              language: 'en-US',
-              rate: 1.0,
-              pitch: 1.0,
-            });
-          }
-        } else {
-          // High confidence - auto-execute
-          if (result.spokenResponse) {
-            await Speech.speak(result.spokenResponse, {
-              language: 'en-US',
-              rate: 1.0,
-              pitch: 1.0,
-            });
-          }
-          
-          // Notify parent component
-          onCommand({
-            type: 'voice',
-            text: finalTranscription,
-            result,
-          });
-        }
-      } else {
-        // Handle error
-        const errorMessage = result.spokenResponse || 'Sorry, something went wrong.';
-        await Speech.speak(errorMessage, { language: 'en-US' });
-        
-        Alert.alert('Error', result.error || 'Failed to process command');
-      }
+      // The backend tells us exactly what to do
+      await handleBackendResponse(result, finalTranscription);
       
     } catch (error) {
       console.error('Failed to process recording:', error);
       Alert.alert('Processing Error', 'Failed to process your command. Please try again.');
     } finally {
       setIsProcessing(false);
-      setTranscribedText(''); // Clear for next recording
+      setTranscribedText('');
     }
+  };
+
+  /**
+   * Handle the response from the intelligent backend
+   * The backend decides the action, we just render it
+   */
+  const handleBackendResponse = async (result: any, originalText: string) => {
+    if (!result.success) {
+      await Speech.speak(result.response?.speak || 'Something went wrong', { language: 'en-US' });
+      return;
+    }
+
+    // The backend tells us what action to take
+    switch (result.action) {
+      case 'execute':
+        // Backend says execute - we execute
+        await Speech.speak(result.response.speak, { language: 'en-US' });
+        onCommand({
+          type: 'voice',
+          text: originalText,
+          result,
+        });
+        break;
+
+      case 'confirm':
+        // Backend wants confirmation - show modal
+        setConfirmationData({
+          originalText,
+          result,
+          options: result.response.options || ['Yes', 'No'],
+        });
+        setShowConfirmModal(true);
+        await Speech.speak(result.response.speak, { language: 'en-US' });
+        break;
+
+      case 'clarify':
+        // Backend needs clarification - speak and wait
+        await Speech.speak(result.response.speak, { language: 'en-US' });
+        // Could trigger another recording or show input
+        break;
+
+      case 'learn':
+        // Backend is learning from patterns
+        await Speech.speak(result.response.speak, { language: 'en-US' });
+        onCommand({
+          type: 'voice',
+          text: originalText,
+          result,
+        });
+        break;
+
+      case 'error':
+        // Backend reported an error
+        await Speech.speak(
+          result.response.speak || "I'm sorry, something went wrong",
+          { language: 'en-US' }
+        );
+        break;
+
+      default:
+        console.warn('Unknown action from backend:', result.action);
+    }
+  };
+
+  /**
+   * Handle confirmation response
+   * Again, just pass to backend, no local logic
+   */
+  const handleConfirmation = async (confirmed: boolean) => {
+    setShowConfirmModal(false);
+    
+    if (!confirmationData) return;
+    
+    if (confirmed) {
+      // User confirmed - execute the action
+      onCommand({
+        type: 'voice',
+        text: confirmationData.originalText,
+        result: confirmationData.result,
+      });
+      await Speech.speak('Great! Executing your command.', { language: 'en-US' });
+    } else {
+      // User rejected - could offer correction
+      await Speech.speak('Ok, cancelled. Please try again.', { language: 'en-US' });
+    }
+    
+    setConfirmationData(null);
   };
 
   const handleTextSubmit = async () => {
@@ -256,69 +279,14 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
     
     setIsProcessing(true);
     try {
-      const result = await sendTextCommand(textInput);
-      
-      if (result.success && result.spokenResponse) {
-        await Speech.speak(result.spokenResponse, { language: 'en-US' });
-      }
-      
-      onCommand({
-        type: 'text',
-        text: textInput,
-        result,
-      });
-      
+      const result = await processVoiceCommand(textInput, sessionId);
+      await handleBackendResponse(result, textInput);
       setTextInput('');
-      
     } catch (error) {
       console.error('Failed to send text command:', error);
       Alert.alert('Error', 'Failed to process command');
     } finally {
       setIsProcessing(false);
-    }
-  };
-
-
-  const handleCorrection = async (correctedData: CorrectionData, alwaysDoThis: boolean) => {
-    try {
-      const result = await applyCorrection({
-        predictionId: correctedData.predictionId || '',
-        originalText: correctedData.originalText,
-        predictedIntent: correctedData.predictedIntent,
-        correctedIntent: correctedData.predictedIntent,
-        predictedSlots: correctedData.predictedSlots,
-        correctedSlots: correctedData.predictedSlots,
-        alwaysDoThis,
-      });
-
-      if (result.success) {
-        // Close modal and process the corrected command
-        setShowCorrectionModal(false);
-        setCorrectionData(null);
-        
-        // Notify parent component with the corrected result
-        onCommand({
-          type: 'voice',
-          text: correctedData.originalText,
-          result: {
-            success: true,
-            intent: correctedData.predictedIntent,
-            slots: correctedData.predictedSlots,
-            event: correctedData.event,
-            spokenResponse: 'Command executed with your correction.',
-          },
-        });
-        
-        // Speak confirmation
-        await Speech.speak('Got it. I\'ve applied your correction and will remember this for next time.', {
-          language: 'en-US',
-        });
-      } else {
-        Alert.alert('Error', 'Failed to apply correction. Please try again.');
-      }
-    } catch (error) {
-      console.error('Correction error:', error);
-      Alert.alert('Error', 'Failed to apply correction.');
     }
   };
 
@@ -374,11 +342,7 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
                   isRecording && { transform: [{ scale: recordingAnimation }] },
                 ]}
               >
-                <Ionicons
-                  name="mic"
-                  size={40}
-                  color="#FFFFFF"
-                />
+                <Ionicons name="mic" size={40} color="#FFFFFF" />
               </Animated.View>
             )}
           </TouchableOpacity>
@@ -390,7 +354,6 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
             </View>
           )}
           
-          {/* Live transcription display */}
           {(isRecording || transcribedText) && (
             <View style={styles.transcriptionContainer}>
               <Text style={styles.transcriptionText}>
@@ -434,34 +397,36 @@ export function VoiceInput({ onCommand, showTextInput = false }: VoiceInputProps
           </TouchableOpacity>
         </View>
       )}
-      
-      {/* Hidden input for testing */}
-      {__DEV__ && (
-        <View style={styles.testContainer}>
-          <TextInput
-            style={styles.hiddenInput}
-            testID="voice-simulator-input"
-            placeholder="Test voice input"
-          />
-          <TouchableOpacity
-            testID="voice-simulator-submit"
-            style={styles.hiddenButton}
-          >
-            <Text>Submit</Text>
-          </TouchableOpacity>
+
+      {/* Simple Confirmation Modal */}
+      <Modal
+        visible={showConfirmModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowConfirmModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>
+              {confirmationData?.result?.response?.speak}
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={() => handleConfirmation(true)}
+              >
+                <Text style={styles.buttonText}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => handleConfirmation(false)}
+              >
+                <Text style={styles.buttonText}>No</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      )}
-      
-      {/* Correction Modal */}
-      <CorrectionModal
-        visible={showCorrectionModal}
-        data={correctionData}
-        onClose={() => {
-          setShowCorrectionModal(false);
-          setCorrectionData(null);
-        }}
-        onConfirm={handleCorrection}
-      />
+      </Modal>
     </View>
   );
 }
@@ -556,17 +521,41 @@ const styles = StyleSheet.create({
     right: 0,
     padding: 10,
   },
-  testContainer: {
-    position: 'absolute',
-    top: -100,
-    opacity: 0,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  hiddenInput: {
-    width: 1,
-    height: 1,
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    width: '80%',
+    maxWidth: 300,
   },
-  hiddenButton: {
-    width: 1,
-    height: 1,
+  modalText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+  },
+  confirmButton: {
+    backgroundColor: '#007AFF',
+  },
+  cancelButton: {
+    backgroundColor: '#FF3B30',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: '600',
   },
 });

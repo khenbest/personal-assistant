@@ -9,6 +9,7 @@ import * as chrono from 'chrono-node';
 import { createClient } from '@supabase/supabase-js';
 import { ClassificationLogger } from './classification-logger';
 import { intentCache } from './cache-service';
+import { accuracyTracker } from './accuracy-tracking-service';
 
 export interface IntentResult {
   intent: string;
@@ -81,7 +82,11 @@ export class IntentService {
     try {
       // Step 1: Try kNN lookup for high-confidence matches
       const knnResult = await this.knnClassify(text);
-      if (knnResult && knnResult.confidence > 0.85) {
+      if (knnResult && knnResult.confidence > 0.6) { // Lowered from 0.85
+        // Extract slots for kNN results
+        const slots = await this.extractSlots(text, knnResult.intent);
+        knnResult.slots = slots;
+        
         const responseTime = Date.now() - startTime;
         knnResult.metadata = { responseTime };
         
@@ -99,11 +104,50 @@ export class IntentService {
           });
         }
         
+        // Cache high confidence results
+        if (knnResult.confidence > 0.8) {
+          intentCache.set(cacheKey, knnResult);
+        }
+        
         return knnResult;
       }
 
-      // Step 2: Use LLM for classification (immediate high accuracy)
-      const llmResult = await this.llmClassify(text);
+      // Step 2: Use LLM for classification ONLY if kNN failed
+      // Add timeout to prevent 30-60 second waits
+      let llmResult: IntentResult | null = null;
+      
+      try {
+        llmResult = await Promise.race([
+          this.llmClassify(text),
+          new Promise<IntentResult>((_, reject) => 
+            setTimeout(() => reject(new Error('LLM timeout')), 1000)
+          )
+        ]);
+      } catch (error: any) {
+        console.warn('⚠️ LLM classification failed or timed out:', error.message);
+        
+        // Return the kNN result if available, even if low confidence
+        if (knnResult) {
+          const responseTime = Date.now() - startTime;
+          return {
+            ...knnResult,
+            needsConfirmation: true,
+            metadata: { responseTime, fallback: 'knn-low-confidence' }
+          };
+        }
+        
+        // Last resort: return unknown intent
+        return {
+          intent: 'none',
+          confidence: 0.1,
+          slots: {},
+          needsConfirmation: true,
+          metadata: {
+            responseTime: Date.now() - startTime,
+            error: 'LLM timeout, no kNN match'
+          }
+        };
+      }
       
       // Step 3: Extract slots using multiple methods
       const slots = await this.extractSlots(text, llmResult.intent);
@@ -120,7 +164,25 @@ export class IntentService {
         }
       };
 
-      // Step 5: Log classification if expected intent provided
+      // Step 5: Log prediction for accuracy tracking
+      const predictionId = await accuracyTracker.logPrediction({
+        original_text: text,
+        predicted_intent: finalResult.intent,
+        predicted_confidence: finalResult.confidence,
+        predicted_slots: finalResult.slots,
+        model_version: 'v1.0.0',
+        response_time_ms: responseTime
+      });
+      
+      // Store predictionId in result for potential corrections
+      if (predictionId) {
+        finalResult.metadata = {
+          ...finalResult.metadata,
+          predictionId
+        };
+      }
+
+      // Step 6: Log classification if expected intent provided (for testing)
       if (expectedIntent) {
         await this.logger.logClassification({
           inputText: text,
@@ -262,24 +324,140 @@ export class IntentService {
    * kNN-based classification using stored embeddings
    */
   private async knnClassify(text: string): Promise<IntentResult | null> {
-    // This will be implemented when embeddings are available
-    // For now, check exact matches in correction history
-    const { data } = await this.supabase
-      .from('intent_corrections')
-      .select('corrected_intent, corrected_slots')
-      .eq('original_text', text)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (data && data.length > 0) {
-      return {
-        intent: data[0]?.corrected_intent || 'none',
-        confidence: 0.95, // High confidence for exact matches
-        slots: data[0]?.corrected_slots || {}
-      };
+    // First check for exact match
+    const normalizedText = text.toLowerCase().trim();
+    
+    // Check exact matches in kNN index
+    for (const [intent, examples] of this.knnIndex) {
+      for (const example of examples) {
+        if (example.text.toLowerCase().trim() === normalizedText) {
+          return {
+            intent,
+            confidence: 1.0, // Perfect match
+            slots: example.slots || {}
+          };
+        }
+      }
     }
-
-    return null;
+    
+    // If no exact match, find similar examples using simple string similarity
+    const similarities: Array<{ intent: string; similarity: number; slots: any }> = [];
+    
+    for (const [intent, examples] of this.knnIndex) {
+      for (const example of examples) {
+        const similarity = this.calculateSimilarity(normalizedText, example.text.toLowerCase().trim());
+        if (similarity > 0.5) { // Only consider reasonably similar examples
+          similarities.push({
+            intent,
+            similarity,
+            slots: example.slots || {}
+          });
+        }
+      }
+    }
+    
+    // Sort by similarity and get top matches
+    similarities.sort((a, b) => b.similarity - a.similarity);
+    
+    if (similarities.length === 0) {
+      return null;
+    }
+    
+    // Get the most common intent among top 5 matches
+    const topK = similarities.slice(0, 5);
+    const intentVotes = new Map<string, number>();
+    
+    for (const match of topK) {
+      const votes = intentVotes.get(match.intent) || 0;
+      intentVotes.set(match.intent, votes + match.similarity);
+    }
+    
+    // Find intent with highest weighted votes
+    let bestIntent = 'none';
+    let bestScore = 0;
+    
+    for (const [intent, score] of intentVotes) {
+      if (score > bestScore) {
+        bestIntent = intent;
+        bestScore = score;
+      }
+    }
+    
+    // Calculate confidence based on similarity and consensus
+    const avgSimilarity = topK.reduce((sum, m) => sum + m.similarity, 0) / topK.length;
+    const consensus = (intentVotes.get(bestIntent) || 0) / topK.reduce((sum, m) => sum + m.similarity, 0);
+    const confidence = avgSimilarity * consensus;
+    
+    return {
+      intent: bestIntent,
+      confidence: Math.min(confidence, 0.95), // Cap at 0.95 for non-exact matches
+      slots: topK[0]?.slots || {}
+    };
+  }
+  
+  private calculateSimilarity(str1: string, str2: string): number {
+    // Normalize and tokenize
+    const normalize = (text: string) => {
+      return text
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')  // Remove punctuation
+        .replace(/\s+/g, ' ')       // Normalize whitespace
+        .trim();
+    };
+    
+    const text1 = normalize(str1);
+    const text2 = normalize(str2);
+    
+    // If strings are identical after normalization
+    if (text1 === text2) return 1.0;
+    
+    // Get tokens
+    const tokens1 = text1.split(' ').filter(t => t.length > 0);
+    const tokens2 = text2.split(' ').filter(t => t.length > 0);
+    
+    if (tokens1.length === 0 || tokens2.length === 0) return 0;
+    
+    // Calculate token overlap with position weighting
+    let score = 0;
+    const maxScore = Math.max(tokens1.length, tokens2.length);
+    
+    // Exact token matches
+    for (let i = 0; i < tokens1.length; i++) {
+      for (let j = 0; j < tokens2.length; j++) {
+        if (tokens1[i] === tokens2[j]) {
+          // Higher score for matching positions
+          const positionBonus = 1 - Math.abs(i - j) / Math.max(tokens1.length, tokens2.length);
+          score += 1 + (positionBonus * 0.5);
+        }
+      }
+    }
+    
+    // Check for important keywords (intent indicators)
+    const intentKeywords = {
+      'create_event': ['schedule', 'meeting', 'appointment', 'calendar', 'book', 'event'],
+      'add_reminder': ['remind', 'reminder', 'ping', 'alert', 'nudge'],
+      'create_note': ['note', 'jot', 'write', 'save', 'capture', 'document'],
+      'read_email': ['check', 'read', 'show', 'list', 'email', 'mail', 'inbox'],
+      'send_email': ['send', 'email', 'compose', 'draft', 'reply', 'forward']
+    };
+    
+    // Boost score if both texts contain same intent keywords
+    for (const [intent, keywords] of Object.entries(intentKeywords)) {
+      const hasKeyword1 = keywords.some(k => text1.includes(k));
+      const hasKeyword2 = keywords.some(k => text2.includes(k));
+      if (hasKeyword1 && hasKeyword2) {
+        score += 2; // Significant boost for matching intent keywords
+      }
+    }
+    
+    // Normalize score to 0-1 range
+    let similarity = score / (maxScore * 1.5); // 1.5 accounts for position and keyword bonuses
+    
+    // Apply length difference penalty (small penalty for different lengths)
+    const lengthRatio = Math.min(tokens1.length, tokens2.length) / Math.max(tokens1.length, tokens2.length);
+    similarity = similarity * (0.8 + 0.2 * lengthRatio);
+    
+    return Math.min(similarity, 1.0);
   }
 
   /**
@@ -512,6 +690,10 @@ export class IntentService {
    * Load kNN index from database
    */
   private async loadKNNIndex() {
+    // First, load training data from CSV files
+    await this.loadTrainingData();
+    
+    // Then load any user corrections from database
     const { data } = await this.supabase
       .from('intent_corrections')
       .select('original_text, corrected_intent, corrected_slots')
@@ -529,6 +711,127 @@ export class IntentService {
         });
       });
     }
+    
+    console.log(`✅ Loaded kNN index with ${this.getTotalExamples()} examples across ${this.knnIndex.size} intents`);
+  }
+  
+  private getTotalExamples(): number {
+    let total = 0;
+    this.knnIndex.forEach(examples => {
+      total += examples.length;
+    });
+    return total;
+  }
+  
+  private async loadTrainingData() {
+    try {
+      // Load main training data
+      const fs = require('fs').promises;
+      const path = require('path');
+      const { parse } = require('csv-parse/sync');
+      
+      // Try multiple paths to find the training data
+      const possiblePaths = [
+        path.join(__dirname, '../../../data/overview_data/intent_training.csv'),
+        path.join(__dirname, '../../../../data/overview_data/intent_training.csv'),
+        path.join(process.cwd(), 'data/overview_data/intent_training.csv'),
+        '/Users/kenny/repos/personal-assistant/data/overview_data/intent_training.csv'
+      ];
+      
+      let trainingData: any[] = [];
+      for (const csvPath of possiblePaths) {
+        try {
+          const fileContent = await fs.readFile(csvPath, 'utf-8');
+          trainingData = parse(fileContent, {
+            columns: true,
+            skip_empty_lines: true
+          });
+          console.log(`📚 Loading ${trainingData.length} training examples from ${csvPath}`);
+          break;
+        } catch (err) {
+          // Try next path
+          continue;
+        }
+      }
+      
+      if (trainingData.length === 0) {
+        console.warn('⚠️ No training data found. kNN will only use corrections.');
+        return;
+      }
+      
+      // Add training examples to kNN index
+      for (const example of trainingData) {
+        const intent = example.intent;
+        if (!this.knnIndex.has(intent)) {
+          this.knnIndex.set(intent, []);
+        }
+        this.knnIndex.get(intent)!.push({
+          text: example.text,
+          slots: {} // Training data doesn't have slots, will be extracted
+        });
+      }
+      
+    } catch (error) {
+      console.error('❌ Error loading training data:', error);
+    }
+  }
+
+  /**
+   * Apply user correction and update learning
+   */
+  async applyCorrection(
+    predictionId: string,
+    correction: UserCorrection,
+    userId?: string
+  ): Promise<boolean> {
+    try {
+      // Log the correction
+      const success = await accuracyTracker.logCorrection({
+        prediction_id: predictionId,
+        user_id: userId,
+        original_text: correction.originalText,
+        predicted_intent: correction.predictedIntent,
+        predicted_slots: correction.predictedSlots,
+        corrected_intent: correction.correctedIntent,
+        corrected_slots: correction.correctedSlots,
+        correction_type: 'manual',
+        applied_immediately: true
+      });
+
+      if (success) {
+        // Update KNN index immediately
+        this.updateKnnIndex(
+          correction.originalText,
+          correction.correctedIntent,
+          correction.correctedSlots
+        );
+
+        console.log('✅ Applied correction:', {
+          text: correction.originalText,
+          from: correction.predictedIntent,
+          to: correction.correctedIntent
+        });
+      }
+
+      return success;
+    } catch (error) {
+      console.error('Failed to apply correction:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get accuracy metrics
+   */
+  async getAccuracyMetrics(hours: number = 24) {
+    return accuracyTracker.getAccuracyMetrics(hours);
+  }
+
+  /**
+   * Get recent classification failures
+   */
+  async getRecentFailures(limit: number = 10) {
+    return accuracyTracker.getRecentFailures(limit);
   }
 }
 

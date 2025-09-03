@@ -8,6 +8,9 @@ import { z } from 'zod';
 import { IntentService } from '../services/intent-service';
 import { CalendarService } from '../services/calendar-service';
 import { UnifiedLLMService } from '../services/unified-llm-service';
+import { TranscriptionService } from '../services/transcription-service';
+import { reminderService } from '../services/reminder-service';
+import { noteService } from '../services/note-service';
 
 const voiceCommandSchema = z.object({
   text: z.string(),
@@ -26,9 +29,98 @@ const correctionSchema = z.object({
 const llmService = new UnifiedLLMService();
 const intentService = new IntentService(llmService);
 const calendarService = new CalendarService(intentService);
+const transcriptionService = new TranscriptionService(llmService);
+
+// Phase 2/3: Advanced orchestrator with conversation context and multi-step planning
+// import { LLMOrchestrator } from '../services/llm-orchestrator';
+// const orchestrator = new LLMOrchestrator();
+
+// Phase 1: Rules + kNN + immediate learning (per OVERVIEW.md)
+import { VoiceProcessor } from '../services/voice-processor';
+const voiceProcessor = new VoiceProcessor(intentService, calendarService);
 
 export async function voiceRoutes(fastify: FastifyInstance) {
-  // Process voice command
+  // NEW: Intelligent voice processing endpoint
+  fastify.post('/voice/process', async (request, reply) => {
+    const { text, sessionId, userId } = request.body as {
+      text: string;
+      sessionId: string;
+      userId?: string;
+    };
+
+    try {
+      // Validate input
+      if (!text || !sessionId) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Missing required fields: text and sessionId'
+        });
+      }
+
+      // Process through MVP processor with designed thresholds (0.81/0.91)
+      const result = await voiceProcessor.processVoiceCommand(
+        text,
+        sessionId,
+        userId || 'demo-user'
+      );
+
+      return {
+        success: true,
+        ...result
+      };
+
+    } catch (error: any) {
+      fastify.log.error({ error }, 'Voice processing error');
+      return reply.status(500).send({
+        success: false,
+        action: 'error',
+        response: {
+          speak: "I'm sorry, I encountered an error. Please try again."
+        },
+        metadata: {
+          intent: 'none',
+          confidence: 'low',
+          requiresConfirmation: false,
+          sessionId
+        },
+        error: error.message
+      });
+    }
+  });
+
+  // Handle corrections from the frontend
+  fastify.post('/voice/correct', async (request, reply) => {
+    const { sessionId, correction } = request.body as {
+      sessionId: string;
+      correction: {
+        originalIntent: string;
+        correctedIntent: string;
+        originalSlots: Record<string, any>;
+        correctedSlots: Record<string, any>;
+        alwaysApply: boolean;
+      };
+    };
+
+    try {
+      // MVP: Use the voiceProcessor instead of orchestrator
+      const result = await voiceProcessor.handleCorrection(sessionId, correction);
+      
+      return {
+        success: true,
+        ...result
+      };
+      
+    } catch (error: any) {
+      fastify.log.error({ error }, 'Correction handling error');
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to apply correction',
+        message: error.message
+      });
+    }
+  });
+
+  // DEPRECATED: Old command endpoint (keeping for backward compatibility)
   fastify.post('/voice/command', async (request, reply) => {
     const { text, userId, conversationId } = voiceCommandSchema.parse(request.body);
     
@@ -47,23 +139,11 @@ export async function voiceRoutes(fastify: FastifyInstance) {
           break;
           
         case 'add_reminder':
-          // TODO: Implement reminder service
-          result = {
-            success: false,
-            message: 'Reminder functionality coming soon',
-            spokenResponse: "I'll be able to set reminders for you soon.",
-            intent: intentResult.intent
-          };
+          result = await reminderService.processReminderCommand(text, userId || 'demo-user');
           break;
           
         case 'create_note':
-          // TODO: Implement note service
-          result = {
-            success: false,
-            message: 'Note functionality coming soon',
-            spokenResponse: "I'll be able to take notes for you soon.",
-            intent: intentResult.intent
-          };
+          result = await noteService.processNoteCommand(text, userId || 'demo-user');
           break;
           
         case 'send_email':
@@ -150,5 +230,39 @@ export async function voiceRoutes(fastify: FastifyInstance) {
     // In production, this would generate actual audio
     // For now, return a mock audio file URL
     return reply.type('audio/mpeg').send('Mock audio data for: ' + text);
+  });
+  
+  // Transcribe audio to text
+  fastify.post('/voice/transcribe', async (request, reply) => {
+    const { audio, format } = request.body as { audio: string; format?: string };
+    
+    try {
+      if (!audio) {
+        return reply.status(400).send({
+          success: false,
+          error: 'No audio data provided'
+        });
+      }
+      
+      // Transcribe the audio
+      const result = await transcriptionService.transcribe(audio, format || 'wav');
+      
+      return {
+        success: true,
+        text: result.text,
+        confidence: result.confidence,
+        language: result.language,
+        duration: result.duration,
+        providers: transcriptionService.getAvailableProviders()
+      };
+      
+    } catch (error: any) {
+      fastify.log.error({ error }, 'Transcription error');
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to transcribe audio',
+        message: error.message
+      });
+    }
   });
 }

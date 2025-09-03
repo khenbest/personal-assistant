@@ -80,6 +80,122 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['memory_entries']['Row'], 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['memory_entries']['Insert']>;
       };
+      // Accuracy tracking tables
+      intent_predictions: {
+        Row: {
+          id: string;
+          original_text: string;
+          predicted_intent?: string;
+          predicted_confidence?: number;
+          predicted_slots?: any;
+          model_version?: string;
+          response_time_ms?: number;
+          timestamp: string;
+        };
+        Insert: Omit<Database['public']['Tables']['intent_predictions']['Row'], 'id' | 'timestamp'>;
+        Update: Partial<Database['public']['Tables']['intent_predictions']['Insert']>;
+      };
+      intent_corrections: {
+        Row: {
+          id: string;
+          prediction_id?: string;
+          user_id?: string;
+          original_text: string;
+          predicted_intent?: string;
+          predicted_confidence?: number;
+          predicted_slots?: any;
+          corrected_intent: string;
+          corrected_slots?: any;
+          correction_type?: string;
+          model_version?: string;
+          applied_immediately?: boolean;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['intent_corrections']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['intent_corrections']['Insert']>;
+      };
+      classification_logs: {
+        Row: {
+          id: string;
+          test_run_id?: string;
+          input_text: string;
+          expected_intent: string;
+          actual_intent?: string;
+          confidence_score?: number;
+          is_correct?: boolean;
+          expected_slots?: any;
+          actual_slots?: any;
+          slot_accuracy?: number;
+          response_time_ms?: number;
+          model_version?: string;
+          error_message?: string;
+          metadata?: any;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['classification_logs']['Row'], 'id' | 'is_correct' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['classification_logs']['Insert']>;
+      };
+      failure_patterns: {
+        Row: {
+          id: string;
+          pattern_type: string;
+          from_intent?: string;
+          to_intent?: string;
+          failure_count?: number;
+          example_texts?: string[];
+          common_keywords?: string[];
+          avg_confidence?: number;
+          last_seen: string;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['failure_patterns']['Row'], 'id' | 'last_seen' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['failure_patterns']['Insert']>;
+      };
+      intent_confusion_matrix: {
+        Row: {
+          id: string;
+          expected_intent: string;
+          predicted_intent: string;
+          count?: number;
+          avg_confidence?: number;
+          example_texts?: string[];
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['intent_confusion_matrix']['Row'], 'id' | 'updated_at'>;
+        Update: Partial<Database['public']['Tables']['intent_confusion_matrix']['Insert']>;
+      };
+      training_queue: {
+        Row: {
+          id: string;
+          text: string;
+          correct_intent: string;
+          correct_slots?: any;
+          source?: string;
+          priority?: number;
+          processed?: boolean;
+          processed_at?: string;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['training_queue']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['training_queue']['Insert']>;
+      };
+      model_metrics: {
+        Row: {
+          id: string;
+          model_version: string;
+          test_date: string;
+          total_tests?: number;
+          correct_predictions?: number;
+          accuracy_percentage?: number;
+          avg_confidence?: number;
+          avg_response_time_ms?: number;
+          intent_metrics?: any;
+          confusion_summary?: any;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['model_metrics']['Row'], 'id' | 'test_date' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['model_metrics']['Insert']>;
+      };
     };
   };
 }
