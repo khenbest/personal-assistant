@@ -1,0 +1,1001 @@
+text,intent
+put sync on my calendar next Tuesday 10:30am,create_event
+schedule a meeting Mon 8-9am called standup,create_event
+put design critique on my calendar today at 4pm,create_event
+put planning on the calendar Mon 8-9am,create_event
+put product review on the calendar next Fri 14:00–15:00,create_event
+put 1:1 with Kim on my calendar tomorrow at 3pm,create_event
+put design critique on my calendar Friday at noon,create_event
+create an event on November 12 at 15:45 called board prep,create_event
+book board prep next Tue 9 to 10,create_event
+schedule a meeting next Fri 14:00–15:00 called sync,create_event
+plan a 60 minute dentist Mon 8-9am,create_event
+put deep work on the calendar next Tue 9 to 10,create_event
+schedule a meeting Wednesday 2-3pm called dentist,create_event
+put dentist on my calendar on Oct 5 at 10am,create_event
+create an event next Tuesday 10:30am called board prep,create_event
+put product review on my calendar next Monday 9am,create_event
+put design critique on my calendar at 7am tomorrow,create_event
+put board prep on the calendar next Tue 9 to 10,create_event
+plan a 60 minute kickoff next Fri 14:00–15:00,create_event
+plan a 60 minute deep work Mon 8-9am,create_event
+put product review on my calendar tonight at 9pm,create_event
+block time at 7am tomorrow 'standup',create_event
+new calendar event this evening 6pm 'budget review',create_event
+book deep work Wednesday 2-3pm,create_event
+put ops check-in on my calendar today at 4pm,create_event
+schedule a meeting next Fri 14:00–15:00 called standup,create_event
+block time tonight at 9pm 'design critique',create_event
+schedule a meeting next Tue 9 to 10 called planning,create_event
+schedule a meeting tomorrow 1 to 2:30 called planning,create_event
+schedule design critique tomorrow at 3pm,create_event
+schedule ops check-in today at 4pm,create_event
+put product review on my calendar next Monday 9am,create_event
+create an event at 7am tomorrow called ops check-in,create_event
+schedule board prep today at 4pm,create_event
+put ops check-in on my calendar tomorrow at 3pm,create_event
+book 1:1 with Yaz next Tue 9 to 10,create_event
+put sync on the calendar Mon 8-9am,create_event
+put product review on my calendar at 7am tomorrow,create_event
+put planning on the calendar next Fri 14:00–15:00,create_event
+plan a 60 minute planning Wednesday 2-3pm,create_event
+book product review next Fri 14:00–15:00,create_event
+create an event on Oct 5 at 10am called deep work,create_event
+create an event next Monday 9am called planning,create_event
+schedule a meeting Wednesday 2-3pm called budget review,create_event
+put kickoff on the calendar next Tue 9 to 10,create_event
+put product review on my calendar at 7am tomorrow,create_event
+new calendar event next Monday 9am '1:1 with Tia',create_event
+new calendar event today at 4pm 'design critique',create_event
+create an event tomorrow at 3pm called design critique,create_event
+put design critique on the calendar next Tue 9 to 10,create_event
+new calendar event Friday at noon 'deep work',create_event
+new calendar event today at 4pm 'dentist',create_event
+create an event at 7am tomorrow called planning,create_event
+book ops check-in Wednesday 2-3pm,create_event
+create an event on November 12 at 15:45 called retro,create_event
+schedule design critique on November 12 at 15:45,create_event
+book ops check-in tomorrow 1 to 2:30,create_event
+book budget review Mon 8-9am,create_event
+block time tomorrow at 3pm 'deep work',create_event
+create an event on Oct 5 at 10am called planning,create_event
+put 1:1 with John on my calendar at 7am tomorrow,create_event
+create an event Friday at noon called planning,create_event
+book sync Wednesday 2-3pm,create_event
+create an event this evening 6pm called 1:1 with Jane,create_event
+block time this evening 6pm 'sync',create_event
+plan a 60 minute board prep Wednesday 2-3pm,create_event
+new calendar event next Tuesday 10:30am 'dentist',create_event
+book ops check-in next Tue 9 to 10,create_event
+put 1:1 with Priya on the calendar next Tue 9 to 10,create_event
+create an event on Oct 5 at 10am called dentist,create_event
+new calendar event Friday at noon 'deep work',create_event
+schedule a meeting Mon 8-9am called planning,create_event
+put planning on my calendar today at 4pm,create_event
+put sync on the calendar Mon 8-9am,create_event
+put dentist on the calendar tomorrow 1 to 2:30,create_event
+book product review Mon 8-9am,create_event
+schedule kickoff on November 12 at 15:45,create_event
+schedule kickoff Friday at noon,create_event
+block time on November 12 at 15:45 'budget review',create_event
+block time Friday at noon 'sync',create_event
+new calendar event Friday at noon 'board prep',create_event
+schedule kickoff tomorrow at 3pm,create_event
+schedule product review today at 4pm,create_event
+put planning on the calendar next Fri 14:00–15:00,create_event
+book deep work Wednesday 2-3pm,create_event
+book standup tomorrow 1 to 2:30,create_event
+plan a 60 minute product review Wednesday 2-3pm,create_event
+schedule a meeting next Fri 14:00–15:00 called ops check-in,create_event
+schedule retro tonight at 9pm,create_event
+schedule a meeting Wednesday 2-3pm called ops check-in,create_event
+create an event next Tuesday 10:30am called deep work,create_event
+new calendar event at 7am tomorrow 'dentist',create_event
+create an event tomorrow at 3pm called planning,create_event
+create an event next Tuesday 10:30am called dentist,create_event
+new calendar event on Oct 5 at 10am '1:1 with Jane',create_event
+put planning on my calendar this evening 6pm,create_event
+put kickoff on the calendar next Tue 9 to 10,create_event
+block time on Oct 5 at 10am 'design critique',create_event
+plan a 60 minute product review tomorrow 1 to 2:30,create_event
+block time next Tuesday 10:30am 'design critique',create_event
+put deep work on my calendar on November 12 at 15:45,create_event
+create an event at 7am tomorrow called 1:1 with Priya,create_event
+block time this evening 6pm 'dentist',create_event
+put board prep on my calendar tonight at 9pm,create_event
+schedule a meeting Wednesday 2-3pm called retro,create_event
+plan a 60 minute planning Mon 8-9am,create_event
+put ops check-in on my calendar next Tuesday 10:30am,create_event
+put deep work on my calendar tomorrow at 3pm,create_event
+book 1:1 with Liam next Tue 9 to 10,create_event
+new calendar event on November 12 at 15:45 'product review',create_event
+create an event tomorrow at 3pm called deep work,create_event
+new calendar event at 7am tomorrow 'design critique',create_event
+new calendar event today at 4pm 'planning',create_event
+block time at 7am tomorrow 'ops check-in',create_event
+book board prep next Fri 14:00–15:00,create_event
+new calendar event Friday at noon 'planning',create_event
+book dentist tomorrow 1 to 2:30,create_event
+schedule deep work today at 4pm,create_event
+create an event at 7am tomorrow called dentist,create_event
+put standup on my calendar Friday at noon,create_event
+new calendar event at 7am tomorrow 'design critique',create_event
+new calendar event on November 12 at 15:45 'kickoff',create_event
+block time tomorrow at 3pm 'ops check-in',create_event
+schedule retro on Oct 5 at 10am,create_event
+put design critique on the calendar next Fri 14:00–15:00,create_event
+create an event tonight at 9pm called deep work,create_event
+put board prep on the calendar next Fri 14:00–15:00,create_event
+schedule a meeting Mon 8-9am called retro,create_event
+create an event tomorrow at 3pm called design critique,create_event
+put design critique on my calendar tonight at 9pm,create_event
+new calendar event next Monday 9am 'dentist',create_event
+plan a 60 minute board prep next Fri 14:00–15:00,create_event
+new calendar event today at 4pm 'design critique',create_event
+put budget review on my calendar on Oct 5 at 10am,create_event
+schedule a meeting next Tue 9 to 10 called sync,create_event
+put deep work on the calendar Mon 8-9am,create_event
+block time today at 4pm 'standup',create_event
+put retro on the calendar tomorrow 1 to 2:30,create_event
+put 1:1 with Priya on the calendar next Tue 9 to 10,create_event
+block time next Tuesday 10:30am 'sync',create_event
+create an event next Monday 9am called design critique,create_event
+schedule a meeting Wednesday 2-3pm called budget review,create_event
+create an event this evening 6pm called ops check-in,create_event
+book 1:1 with Val tomorrow 1 to 2:30,create_event
+create an event on Oct 5 at 10am called board prep,create_event
+book design critique next Tue 9 to 10,create_event
+put product review on the calendar next Fri 14:00–15:00,create_event
+book standup tomorrow 1 to 2:30,create_event
+plan a 60 minute design critique Mon 8-9am,create_event
+plan a 60 minute deep work next Tue 9 to 10,create_event
+block time tonight at 9pm 'retro',create_event
+new calendar event tomorrow at 3pm 'product review',create_event
+schedule board prep next Monday 9am,create_event
+schedule dentist this evening 6pm,create_event
+create an event next Monday 9am called kickoff,create_event
+put budget review on my calendar at 7am tomorrow,create_event
+book retro next Fri 14:00–15:00,create_event
+new calendar event next Monday 9am 'kickoff',create_event
+schedule deep work this evening 6pm,create_event
+block time on November 12 at 15:45 'planning',create_event
+plan a 60 minute board prep tomorrow 1 to 2:30,create_event
+schedule deep work next Monday 9am,create_event
+put budget review on my calendar Friday at noon,create_event
+block time this evening 6pm 'budget review',create_event
+plan a 60 minute dentist Wednesday 2-3pm,create_event
+block time tomorrow at 3pm 'board prep',create_event
+block time tomorrow at 3pm 'dentist',create_event
+schedule a meeting next Fri 14:00–15:00 called budget review,create_event
+new calendar event tonight at 9pm 'kickoff',create_event
+schedule board prep tomorrow at 3pm,create_event
+new calendar event today at 4pm 'retro',create_event
+put sync on my calendar tomorrow at 3pm,create_event
+create an event next Tuesday 10:30am called ops check-in,create_event
+block time on November 12 at 15:45 'sync',create_event
+book ops check-in Mon 8-9am,create_event
+new calendar event this evening 6pm 'retro',create_event
+schedule a meeting Mon 8-9am called 1:1 with Frank,create_event
+schedule a meeting tomorrow 1 to 2:30 called deep work,create_event
+put deep work on my calendar today at 4pm,create_event
+new calendar event this evening 6pm 'design critique',create_event
+nudge me next Friday to pay rent,add_reminder
+set a reminder in 45 minutes to check on Sam,add_reminder
+set a reminder daily at 8am to submit timesheet,add_reminder
+set a reminder in 3 days to check flights,add_reminder
+remind me in 3 days to submit timesheet,add_reminder
+nudge me next Friday to submit timesheet,add_reminder
+nudge me in 45 minutes to take meds,add_reminder
+add reminder tonight: stretch,add_reminder
+add reminder in two hours: check flights,add_reminder
+remind me next Friday to check flights,add_reminder
+remind me daily at 8am to water the plants,add_reminder
+remind me next Friday to submit timesheet,add_reminder
+add reminder tonight: take meds,add_reminder
+add reminder tonight: pay rent,add_reminder
+nudge me tomorrow morning to check on Quinn,add_reminder
+remind me in 45 minutes to stretch,add_reminder
+add reminder tomorrow morning: stretch,add_reminder
+remind me daily at 8am to take meds,add_reminder
+nudge me next Friday to stretch,add_reminder
+remind me tonight to submit timesheet,add_reminder
+remind me tomorrow morning to take meds,add_reminder
+add reminder tonight: stretch,add_reminder
+set a reminder in two hours to submit timesheet,add_reminder
+add reminder next Friday: pay rent,add_reminder
+remind me in two hours to take meds,add_reminder
+set a reminder in 3 days to submit timesheet,add_reminder
+add reminder tonight: follow up with Frank,add_reminder
+add reminder in two hours: submit timesheet,add_reminder
+add reminder in 3 days: submit timesheet,add_reminder
+nudge me tonight to stretch,add_reminder
+add reminder in 3 days: take meds,add_reminder
+set a reminder in 3 days to take meds,add_reminder
+add reminder daily at 8am: stretch,add_reminder
+remind me daily at 8am to stretch,add_reminder
+add reminder daily at 8am: stretch,add_reminder
+add reminder tonight: take meds,add_reminder
+add reminder daily at 8am: check flights,add_reminder
+set a reminder in 3 days to submit timesheet,add_reminder
+add reminder daily at 8am: pay rent,add_reminder
+add reminder tomorrow morning: water the plants,add_reminder
+set a reminder daily at 8am to submit timesheet,add_reminder
+nudge me tonight to pay rent,add_reminder
+add reminder daily at 8am: submit timesheet,add_reminder
+set a reminder in two hours to take meds,add_reminder
+add reminder in two hours: pay rent,add_reminder
+add reminder tonight: stretch,add_reminder
+add reminder next Friday: submit timesheet,add_reminder
+add reminder daily at 8am: water the plants,add_reminder
+remind me tonight to follow up with Xena,add_reminder
+set a reminder next Friday to water the plants,add_reminder
+remind me in two hours to take meds,add_reminder
+remind me next Friday to water the plants,add_reminder
+nudge me in two hours to submit timesheet,add_reminder
+set a reminder in 3 days to take meds,add_reminder
+set a reminder in 45 minutes to check flights,add_reminder
+add reminder tonight: email Alice,add_reminder
+set a reminder tomorrow morning to pay rent,add_reminder
+add reminder next Friday: water the plants,add_reminder
+add reminder daily at 8am: send to Erin,add_reminder
+set a reminder tonight to water the plants,add_reminder
+nudge me tonight to stretch,add_reminder
+add reminder next Friday: water the plants,add_reminder
+add reminder tomorrow morning: pay rent,add_reminder
+nudge me tonight to take meds,add_reminder
+remind me next Friday to water the plants,add_reminder
+remind me next Friday to take meds,add_reminder
+remind me in 45 minutes to submit timesheet,add_reminder
+nudge me tomorrow morning to water the plants,add_reminder
+nudge me daily at 8am to check flights,add_reminder
+nudge me tonight to pay rent,add_reminder
+set a reminder in 45 minutes to submit timesheet,add_reminder
+remind me in 45 minutes to water the plants,add_reminder
+nudge me tonight to check on Frank,add_reminder
+nudge me next Friday to email Tia,add_reminder
+set a reminder in 3 days to pay rent,add_reminder
+nudge me tonight to stretch,add_reminder
+add reminder daily at 8am: stretch,add_reminder
+nudge me daily at 8am to water the plants,add_reminder
+set a reminder in two hours to take meds,add_reminder
+add reminder in 45 minutes: submit timesheet,add_reminder
+add reminder in two hours: stretch,add_reminder
+add reminder in two hours: check flights,add_reminder
+nudge me in 45 minutes to water the plants,add_reminder
+nudge me in 45 minutes to submit timesheet,add_reminder
+remind me tomorrow morning to pay rent,add_reminder
+set a reminder tonight to stretch,add_reminder
+add reminder daily at 8am: water the plants,add_reminder
+add reminder in 45 minutes: stretch,add_reminder
+nudge me in two hours to email Jane,add_reminder
+set a reminder in 3 days to call Liam,add_reminder
+add reminder in 45 minutes: stretch,add_reminder
+add reminder in 3 days: water the plants,add_reminder
+add reminder tomorrow morning: submit timesheet,add_reminder
+set a reminder next Friday to water the plants,add_reminder
+nudge me daily at 8am to pay rent,add_reminder
+nudge me tonight to stretch,add_reminder
+remind me in 3 days to stretch,add_reminder
+set a reminder in 45 minutes to check on Xena,add_reminder
+remind me in two hours to check flights,add_reminder
+set a reminder in 3 days to pay rent,add_reminder
+set a reminder tonight to pay rent,add_reminder
+set a reminder daily at 8am to stretch,add_reminder
+set a reminder next Friday to follow up with Val,add_reminder
+set a reminder daily at 8am to stretch,add_reminder
+set a reminder in two hours to submit timesheet,add_reminder
+set a reminder daily at 8am to submit timesheet,add_reminder
+nudge me in 3 days to text Owen,add_reminder
+remind me tomorrow morning to water the plants,add_reminder
+nudge me tomorrow morning to take meds,add_reminder
+set a reminder tomorrow morning to follow up with Maya,add_reminder
+nudge me daily at 8am to water the plants,add_reminder
+add reminder in two hours: send to Kim,add_reminder
+remind me in 45 minutes to take meds,add_reminder
+remind me in two hours to take meds,add_reminder
+set a reminder in two hours to pay rent,add_reminder
+nudge me tonight to water the plants,add_reminder
+add reminder next Friday: check flights,add_reminder
+remind me in two hours to take meds,add_reminder
+set a reminder daily at 8am to water the plants,add_reminder
+nudge me tomorrow morning to pay rent,add_reminder
+remind me tomorrow morning to take meds,add_reminder
+nudge me in 45 minutes to stretch,add_reminder
+remind me tomorrow morning to water the plants,add_reminder
+remind me tomorrow morning to call Alex,add_reminder
+set a reminder daily at 8am to stretch,add_reminder
+nudge me tonight to check flights,add_reminder
+add reminder next Friday: take meds,add_reminder
+nudge me next Friday to send to Xena,add_reminder
+set a reminder tonight to check flights,add_reminder
+remind me in 3 days to take meds,add_reminder
+nudge me in two hours to stretch,add_reminder
+remind me tomorrow morning to submit timesheet,add_reminder
+nudge me in 45 minutes to submit timesheet,add_reminder
+nudge me in 45 minutes to stretch,add_reminder
+set a reminder in two hours to stretch,add_reminder
+add reminder in 45 minutes: check flights,add_reminder
+remind me in 45 minutes to water the plants,add_reminder
+add reminder in 3 days: check flights,add_reminder
+nudge me in 3 days to stretch,add_reminder
+remind me daily at 8am to stretch,add_reminder
+remind me in 3 days to pay rent,add_reminder
+add reminder tomorrow morning: stretch,add_reminder
+nudge me tomorrow morning to take meds,add_reminder
+add reminder next Friday: follow up with Charlie,add_reminder
+add reminder in 45 minutes: water the plants,add_reminder
+set a reminder in two hours to stretch,add_reminder
+set a reminder in two hours to follow up with Iris,add_reminder
+nudge me in 3 days to submit timesheet,add_reminder
+add reminder in two hours: text Frank,add_reminder
+add reminder in 3 days: pay rent,add_reminder
+nudge me tonight to pay rent,add_reminder
+remind me in 45 minutes to submit timesheet,add_reminder
+nudge me in two hours to take meds,add_reminder
+add reminder tomorrow morning: check flights,add_reminder
+nudge me in two hours to take meds,add_reminder
+nudge me daily at 8am to take meds,add_reminder
+set a reminder in two hours to submit timesheet,add_reminder
+remind me tonight to take meds,add_reminder
+set a reminder next Friday to water the plants,add_reminder
+remind me tonight to email Grace,add_reminder
+nudge me daily at 8am to pay rent,add_reminder
+set a reminder in 45 minutes to submit timesheet,add_reminder
+set a reminder next Friday to pay rent,add_reminder
+remind me daily at 8am to pay rent,add_reminder
+add reminder tomorrow morning: take meds,add_reminder
+nudge me in 45 minutes to water the plants,add_reminder
+add reminder in 3 days: stretch,add_reminder
+nudge me in 45 minutes to take meds,add_reminder
+nudge me in two hours to check flights,add_reminder
+add reminder tomorrow morning: stretch,add_reminder
+nudge me daily at 8am to stretch,add_reminder
+remind me daily at 8am to submit timesheet,add_reminder
+add reminder tomorrow morning: check flights,add_reminder
+remind me in 45 minutes to submit timesheet,add_reminder
+nudge me in 3 days to water the plants,add_reminder
+remind me in 3 days to check flights,add_reminder
+nudge me daily at 8am to submit timesheet,add_reminder
+set a reminder in 45 minutes to check flights,add_reminder
+add reminder tomorrow morning: water the plants,add_reminder
+nudge me in 3 days to check flights,add_reminder
+note this down: talk to legal about contract,create_note
+append to my daily note: travel packing list,create_note
+note this down: meeting notes from standup,create_note
+make a note: draft bullets for OKRs,create_note
+make a note: draft bullets for OKRs,create_note
+make a note: design token tasks,create_note
+save a note titled 'Travel' with travel packing list,create_note
+note this down: meeting notes from standup,create_note
+add to notes: draft bullets for OKRs,create_note
+make a note: meeting notes from standup,create_note
+save a note titled 'Travel' with hire plan Q4,create_note
+note this down: travel packing list,create_note
+add to notes: meeting notes from standup,create_note
+save a note titled 'Travel' with grocery list milk eggs bread,create_note
+capture: travel packing list,create_note
+save a note titled 'Ideas' with draft bullets for OKRs,create_note
+save a note titled 'OKRs' with design token tasks,create_note
+save a note titled 'Todo' with travel packing list,create_note
+note this down: idea for onboarding flow,create_note
+note this down: talk to legal about contract,create_note
+add to notes: ship build passed,create_note
+note this down: metrics daus waus retention,create_note
+add to notes: ship build passed,create_note
+add to notes: hire plan Q4,create_note
+make a note: talk to legal about contract,create_note
+make a note: design token tasks,create_note
+capture: design token tasks,create_note
+make a note: draft bullets for OKRs,create_note
+capture: hire plan Q4,create_note
+capture: travel packing list,create_note
+add to notes: hire plan Q4,create_note
+add to notes: meeting notes from standup,create_note
+add to notes: metrics daus waus retention,create_note
+make a note: travel packing list,create_note
+note this down: ship build passed,create_note
+append to my daily note: meeting notes from standup,create_note
+note this down: metrics daus waus retention,create_note
+add to notes: design token tasks,create_note
+add to notes: talk to legal about contract,create_note
+append to my daily note: ship build passed,create_note
+note this down: meeting notes from standup,create_note
+append to my daily note: metrics daus waus retention,create_note
+note this down: travel packing list,create_note
+capture: design token tasks,create_note
+append to my daily note: hire plan Q4,create_note
+add to notes: meeting notes from standup,create_note
+add to notes: talk to legal about contract,create_note
+make a note: metrics daus waus retention,create_note
+note this down: design token tasks,create_note
+make a note: design token tasks,create_note
+make a note: talk to legal about contract,create_note
+make a note: hire plan Q4,create_note
+note this down: metrics daus waus retention,create_note
+capture: hire plan Q4,create_note
+append to my daily note: grocery list milk eggs bread,create_note
+add to notes: metrics daus waus retention,create_note
+note this down: idea for onboarding flow,create_note
+append to my daily note: idea for onboarding flow,create_note
+append to my daily note: design token tasks,create_note
+note this down: ship build passed,create_note
+append to my daily note: grocery list milk eggs bread,create_note
+note this down: ship build passed,create_note
+make a note: draft bullets for OKRs,create_note
+make a note: draft bullets for OKRs,create_note
+add to notes: hire plan Q4,create_note
+make a note: talk to legal about contract,create_note
+append to my daily note: hire plan Q4,create_note
+save a note titled 'Retro' with metrics daus waus retention,create_note
+capture: idea for onboarding flow,create_note
+make a note: idea for onboarding flow,create_note
+note this down: ship build passed,create_note
+add to notes: design token tasks,create_note
+save a note titled 'Todo' with meeting notes from standup,create_note
+append to my daily note: grocery list milk eggs bread,create_note
+note this down: ship build passed,create_note
+note this down: grocery list milk eggs bread,create_note
+make a note: ship build passed,create_note
+append to my daily note: meeting notes from standup,create_note
+append to my daily note: grocery list milk eggs bread,create_note
+make a note: metrics daus waus retention,create_note
+capture: design token tasks,create_note
+make a note: design token tasks,create_note
+capture: ship build passed,create_note
+save a note titled 'Travel' with hire plan Q4,create_note
+append to my daily note: idea for onboarding flow,create_note
+capture: draft bullets for OKRs,create_note
+add to notes: meeting notes from standup,create_note
+append to my daily note: hire plan Q4,create_note
+save a note titled 'Todo' with grocery list milk eggs bread,create_note
+note this down: grocery list milk eggs bread,create_note
+capture: design token tasks,create_note
+capture: design token tasks,create_note
+capture: idea for onboarding flow,create_note
+append to my daily note: metrics daus waus retention,create_note
+make a note: travel packing list,create_note
+note this down: talk to legal about contract,create_note
+save a note titled 'Travel' with idea for onboarding flow,create_note
+make a note: draft bullets for OKRs,create_note
+add to notes: grocery list milk eggs bread,create_note
+capture: draft bullets for OKRs,create_note
+add to notes: idea for onboarding flow,create_note
+note this down: design token tasks,create_note
+note this down: hire plan Q4,create_note
+save a note titled 'Retro' with metrics daus waus retention,create_note
+save a note titled 'Ideas' with hire plan Q4,create_note
+make a note: metrics daus waus retention,create_note
+make a note: talk to legal about contract,create_note
+add to notes: idea for onboarding flow,create_note
+add to notes: idea for onboarding flow,create_note
+note this down: talk to legal about contract,create_note
+capture: travel packing list,create_note
+capture: metrics daus waus retention,create_note
+note this down: idea for onboarding flow,create_note
+save a note titled 'Travel' with ship build passed,create_note
+note this down: idea for onboarding flow,create_note
+save a note titled 'Travel' with draft bullets for OKRs,create_note
+make a note: draft bullets for OKRs,create_note
+append to my daily note: travel packing list,create_note
+save a note titled 'Retro' with metrics daus waus retention,create_note
+note this down: hire plan Q4,create_note
+append to my daily note: metrics daus waus retention,create_note
+note this down: design token tasks,create_note
+note this down: grocery list milk eggs bread,create_note
+save a note titled 'OKRs' with travel packing list,create_note
+append to my daily note: meeting notes from standup,create_note
+add to notes: design token tasks,create_note
+note this down: draft bullets for OKRs,create_note
+make a note: grocery list milk eggs bread,create_note
+note this down: talk to legal about contract,create_note
+note this down: metrics daus waus retention,create_note
+capture: travel packing list,create_note
+add to notes: metrics daus waus retention,create_note
+note this down: metrics daus waus retention,create_note
+make a note: draft bullets for OKRs,create_note
+capture: travel packing list,create_note
+note this down: idea for onboarding flow,create_note
+make a note: travel packing list,create_note
+note this down: design token tasks,create_note
+save a note titled 'OKRs' with hire plan Q4,create_note
+add to notes: meeting notes from standup,create_note
+save a note titled 'OKRs' with metrics daus waus retention,create_note
+add to notes: grocery list milk eggs bread,create_note
+add to notes: draft bullets for OKRs,create_note
+note this down: travel packing list,create_note
+capture: idea for onboarding flow,create_note
+capture: hire plan Q4,create_note
+save a note titled 'Travel' with metrics daus waus retention,create_note
+note this down: metrics daus waus retention,create_note
+make a note: meeting notes from standup,create_note
+add to notes: design token tasks,create_note
+note this down: travel packing list,create_note
+note this down: talk to legal about contract,create_note
+add to notes: grocery list milk eggs bread,create_note
+make a note: hire plan Q4,create_note
+append to my daily note: design token tasks,create_note
+append to my daily note: design token tasks,create_note
+make a note: talk to legal about contract,create_note
+note this down: metrics daus waus retention,create_note
+add to notes: meeting notes from standup,create_note
+note this down: metrics daus waus retention,create_note
+add to notes: grocery list milk eggs bread,create_note
+add to notes: grocery list milk eggs bread,create_note
+append to my daily note: hire plan Q4,create_note
+save a note titled 'OKRs' with metrics daus waus retention,create_note
+save a note titled 'Travel' with draft bullets for OKRs,create_note
+save a note titled 'Todo' with grocery list milk eggs bread,create_note
+capture: talk to legal about contract,create_note
+note this down: hire plan Q4,create_note
+save a note titled 'Travel' with hire plan Q4,create_note
+capture: ship build passed,create_note
+make a note: ship build passed,create_note
+add to notes: ship build passed,create_note
+append to my daily note: idea for onboarding flow,create_note
+note this down: design token tasks,create_note
+capture: draft bullets for OKRs,create_note
+append to my daily note: design token tasks,create_note
+add to notes: meeting notes from standup,create_note
+make a note: grocery list milk eggs bread,create_note
+note this down: travel packing list,create_note
+save a note titled 'Todo' with metrics daus waus retention,create_note
+show me emails from Jack today,read_email
+show threads from Bob about onboarding,read_email
+what are the unread messages in recruiting label,read_email
+what are the unread messages in recruiting label,read_email
+read my latest unread emails,read_email
+what are the unread messages in inbox label,read_email
+pull up all emails with subject status update,read_email
+any new emails about ideas,read_email
+list starred emails from this week,read_email
+what are the unread messages in recruiting label,read_email
+show me emails from Quinn today,read_email
+what are the unread messages in finance label,read_email
+pull up all emails with subject thank you,read_email
+read my latest unread emails,read_email
+any new emails about thank you,read_email
+read the newest message from Quinn,read_email
+any new emails about invoice,read_email
+list starred emails from this week,read_email
+show threads from Val about onboarding,read_email
+show threads from Alex about onboarding,read_email
+list starred emails from this week,read_email
+pull up all emails with subject status update,read_email
+read the newest message from Xena,read_email
+show me emails from Bob today,read_email
+show me emails from Grace today,read_email
+what are the unread messages in important label,read_email
+read the newest message from Jane,read_email
+list starred emails from this week,read_email
+pull up all emails with subject ideas,read_email
+show threads from Charlie about onboarding,read_email
+read my latest unread emails,read_email
+show threads from Alex about onboarding,read_email
+pull up all emails with subject thank you,read_email
+show threads from John about onboarding,read_email
+read my latest unread emails,read_email
+what are the unread messages in inbox label,read_email
+read the newest message from Yaz,read_email
+read my latest unread emails,read_email
+pull up all emails with subject travel plans,read_email
+read the newest message from Noah,read_email
+any new emails about contract,read_email
+show me emails from Wes today,read_email
+pull up all emails with subject metrics to watch,read_email
+pull up all emails with subject contract,read_email
+read the newest message from Uri,read_email
+read my latest unread emails,read_email
+show threads from Bob about onboarding,read_email
+what are the unread messages in recruiting label,read_email
+what are the unread messages in recruiting label,read_email
+pull up all emails with subject OKRs,read_email
+show threads from Maya about onboarding,read_email
+show threads from Sam about onboarding,read_email
+pull up all emails with subject ideas,read_email
+any new emails about metrics to watch,read_email
+show threads from Val about onboarding,read_email
+list starred emails from this week,read_email
+show threads from Tia about onboarding,read_email
+read the newest message from Alice,read_email
+show me emails from Bob today,read_email
+pull up all emails with subject invoice,read_email
+list starred emails from this week,read_email
+show threads from Jack about onboarding,read_email
+list starred emails from this week,read_email
+read the newest message from Noah,read_email
+pull up all emails with subject invoice,read_email
+show threads from Noah about onboarding,read_email
+any new emails about OKRs,read_email
+list starred emails from this week,read_email
+show threads from Sam about onboarding,read_email
+any new emails about OKRs,read_email
+read the newest message from Jane,read_email
+what are the unread messages in important label,read_email
+show me emails from Frank today,read_email
+show threads from Henry about onboarding,read_email
+any new emails about contract,read_email
+what are the unread messages in recruiting label,read_email
+list starred emails from this week,read_email
+list starred emails from this week,read_email
+show me emails from Quinn today,read_email
+show me emails from Jack today,read_email
+what are the unread messages in finance label,read_email
+list starred emails from this week,read_email
+any new emails about ideas,read_email
+list starred emails from this week,read_email
+read the newest message from Noah,read_email
+read the newest message from Yaz,read_email
+any new emails about status update,read_email
+any new emails about hiring plan,read_email
+pull up all emails with subject about launch,read_email
+show threads from Frank about onboarding,read_email
+show threads from Yaz about onboarding,read_email
+pull up all emails with subject about launch,read_email
+what are the unread messages in important label,read_email
+list starred emails from this week,read_email
+read the newest message from Alice,read_email
+read the newest message from Maya,read_email
+what are the unread messages in inbox label,read_email
+read my latest unread emails,read_email
+show threads from Erin about onboarding,read_email
+any new emails about ideas,read_email
+any new emails about hiring plan,read_email
+read my latest unread emails,read_email
+any new emails about invoice,read_email
+any new emails about contract,read_email
+pull up all emails with subject OKRs,read_email
+what are the unread messages in finance label,read_email
+pull up all emails with subject invoice,read_email
+list starred emails from this week,read_email
+show me emails from Uri today,read_email
+pull up all emails with subject contract,read_email
+read my latest unread emails,read_email
+list starred emails from this week,read_email
+what are the unread messages in recruiting label,read_email
+show me emails from Grace today,read_email
+show threads from Raj about onboarding,read_email
+read my latest unread emails,read_email
+read the newest message from Kim,read_email
+show threads from Kim about onboarding,read_email
+read the newest message from Raj,read_email
+show me emails from Erin today,read_email
+show me emails from John today,read_email
+show threads from Noah about onboarding,read_email
+what are the unread messages in starred label,read_email
+pull up all emails with subject metrics to watch,read_email
+read the newest message from Yaz,read_email
+what are the unread messages in inbox label,read_email
+what are the unread messages in starred label,read_email
+what are the unread messages in important label,read_email
+read my latest unread emails,read_email
+read the newest message from Frank,read_email
+list starred emails from this week,read_email
+any new emails about status update,read_email
+read the newest message from Charlie,read_email
+list starred emails from this week,read_email
+read my latest unread emails,read_email
+list starred emails from this week,read_email
+show threads from Tia about onboarding,read_email
+read my latest unread emails,read_email
+list starred emails from this week,read_email
+pull up all emails with subject ideas,read_email
+list starred emails from this week,read_email
+read my latest unread emails,read_email
+read the newest message from Noah,read_email
+pull up all emails with subject hiring plan,read_email
+pull up all emails with subject contract,read_email
+what are the unread messages in important label,read_email
+show threads from Frank about onboarding,read_email
+what are the unread messages in finance label,read_email
+read the newest message from Val,read_email
+what are the unread messages in recruiting label,read_email
+list starred emails from this week,read_email
+pull up all emails with subject invoice,read_email
+read my latest unread emails,read_email
+read my latest unread emails,read_email
+list starred emails from this week,read_email
+any new emails about ideas,read_email
+list starred emails from this week,read_email
+list starred emails from this week,read_email
+read the newest message from Sam,read_email
+pull up all emails with subject contract,read_email
+show threads from Uri about onboarding,read_email
+any new emails about OKRs,read_email
+show threads from Henry about onboarding,read_email
+list starred emails from this week,read_email
+read my latest unread emails,read_email
+read my latest unread emails,read_email
+read the newest message from Erin,read_email
+pull up all emails with subject travel plans,read_email
+list starred emails from this week,read_email
+any new emails about ideas,read_email
+show threads from Uri about onboarding,read_email
+what are the unread messages in starred label,read_email
+what are the unread messages in recruiting label,read_email
+read my latest unread emails,read_email
+read my latest unread emails,read_email
+show me emails from Jack today,read_email
+list starred emails from this week,read_email
+read my latest unread emails,read_email
+show threads from Priya about onboarding,read_email
+read the newest message from Sarah,read_email
+write an email to Sarah: Let's discuss tomorrow,send_email
+send an email to finance about metrics to watch,send_email
+compose message to team re: contract,send_email
+send follow-up to Charlie with subject contract,send_email
+send follow-up to Erin with subject metrics to watch,send_email
+compose message to marketing re: thank you,send_email
+send an email to ops about about launch,send_email
+send a note to myself titled 'metrics to watch',send_email
+send an email to ops about hiring plan,send_email
+send an email to design about metrics to watch,send_email
+compose message to finance re: hiring plan,send_email
+write an email to Yaz: Agenda below,send_email
+email John the OKRs,send_email
+compose message to design re: ideas,send_email
+write an email to Owen: Please review by EOD,send_email
+email the finance See comments inline,send_email
+draft an email to Raj subject ideas,send_email
+send follow-up to Val with subject about launch,send_email
+send an email to team about metrics to watch,send_email
+email the finance See comments inline,send_email
+send a note to myself titled 'hiring plan',send_email
+email the product group Quick update,send_email
+send an email to product group about thank you,send_email
+send an email to finance about OKRs,send_email
+draft an email to Alex subject status update,send_email
+send an email to marketing about ideas,send_email
+send follow-up to Alex with subject OKRs,send_email
+send an email to engineering about about launch,send_email
+email the marketing Quick update,send_email
+send an email to team about about launch,send_email
+email Priya the ideas,send_email
+compose message to marketing re: metrics to watch,send_email
+draft an email to Owen subject status update,send_email
+send a note to myself titled 'OKRs',send_email
+write an email to Bob: Follow-up from our call,send_email
+send follow-up to Jack with subject invoice,send_email
+compose message to product group re: invoice,send_email
+email Kim the status update,send_email
+send follow-up to Iris with subject thank you,send_email
+draft an email to Kim subject metrics to watch,send_email
+send a note to myself titled 'thank you',send_email
+write an email to Grace: Thanks for your help,send_email
+compose message to ops re: invoice,send_email
+send follow-up to Grace with subject OKRs,send_email
+draft an email to Jane subject travel plans,send_email
+send a note to myself titled 'contract',send_email
+send an email to product group about invoice,send_email
+draft an email to Wes subject metrics to watch,send_email
+draft an email to Quinn subject travel plans,send_email
+send a note to myself titled 'metrics to watch',send_email
+email the marketing Follow-up from our call,send_email
+send an email to team about ideas,send_email
+draft an email to Jane subject travel plans,send_email
+email the finance See comments inline,send_email
+email Uri the metrics to watch,send_email
+compose message to engineering re: travel plans,send_email
+draft an email to Kim subject metrics to watch,send_email
+write an email to Henry: Please review by EOD,send_email
+send follow-up to Jack with subject about launch,send_email
+send a note to myself titled 'invoice',send_email
+send a note to myself titled 'about launch',send_email
+send an email to team about OKRs,send_email
+draft an email to Sarah subject ideas,send_email
+draft an email to Zed subject travel plans,send_email
+email the product group Quick update,send_email
+draft an email to Kim subject metrics to watch,send_email
+email Quinn the metrics to watch,send_email
+email the finance Agenda below,send_email
+write an email to Iris: Attaching the document,send_email
+send an email to ops about about launch,send_email
+send follow-up to Val with subject contract,send_email
+write an email to Grace: Please review by EOD,send_email
+send follow-up to Raj with subject invoice,send_email
+send an email to marketing about thank you,send_email
+draft an email to Henry subject invoice,send_email
+send an email to ops about OKRs,send_email
+compose message to product group re: ideas,send_email
+draft an email to Frank subject status update,send_email
+draft an email to Maya subject metrics to watch,send_email
+send a note to myself titled 'metrics to watch',send_email
+draft an email to Quinn subject status update,send_email
+send follow-up to Liam with subject status update,send_email
+send follow-up to Wes with subject thank you,send_email
+email the marketing Attaching the document,send_email
+send a note to myself titled 'invoice',send_email
+draft an email to Jack subject invoice,send_email
+write an email to Alex: Attaching the document,send_email
+write an email to John: Quick update,send_email
+send a note to myself titled 'invoice',send_email
+send an email to finance about about launch,send_email
+email Erin the contract,send_email
+compose message to ops re: invoice,send_email
+email Jack the travel plans,send_email
+send a note to myself titled 'ideas',send_email
+send follow-up to Xena with subject travel plans,send_email
+draft an email to Xena subject thank you,send_email
+email Priya the travel plans,send_email
+draft an email to Owen subject contract,send_email
+write an email to Grace: Let's discuss tomorrow,send_email
+email the finance Here are the next steps,send_email
+draft an email to Zed subject OKRs,send_email
+email the product group Attaching the document,send_email
+email the product group Let's discuss tomorrow,send_email
+email the marketing Please review by EOD,send_email
+send a note to myself titled 'OKRs',send_email
+send an email to engineering about thank you,send_email
+email the marketing Please review by EOD,send_email
+write an email to Charlie: Agenda below,send_email
+draft an email to Grace subject OKRs,send_email
+email Owen the invoice,send_email
+send an email to team about invoice,send_email
+send a note to myself titled 'status update',send_email
+write an email to Sarah: Here are the next steps,send_email
+send follow-up to Alice with subject OKRs,send_email
+email Erin the ideas,send_email
+email the ops Attaching the document,send_email
+compose message to team re: about launch,send_email
+compose message to team re: status update,send_email
+email Maya the invoice,send_email
+draft an email to Sam subject about launch,send_email
+send an email to team about travel plans,send_email
+send follow-up to Tia with subject about launch,send_email
+draft an email to Henry subject status update,send_email
+email Quinn the status update,send_email
+send follow-up to Priya with subject status update,send_email
+send a note to myself titled 'status update',send_email
+draft an email to Xena subject about launch,send_email
+send follow-up to Uri with subject thank you,send_email
+write an email to Jack: Attaching the document,send_email
+write an email to Quinn: Quick update,send_email
+compose message to ops re: hiring plan,send_email
+email the finance Attaching the document,send_email
+send a note to myself titled 'hiring plan',send_email
+send an email to team about travel plans,send_email
+draft an email to Maya subject ideas,send_email
+send follow-up to Iris with subject thank you,send_email
+send an email to ops about status update,send_email
+write an email to Sarah: I'll send the draft,send_email
+write an email to Charlie: Follow-up from our call,send_email
+email the ops Follow-up from our call,send_email
+draft an email to Sam subject about launch,send_email
+compose message to team re: OKRs,send_email
+email the product group Thanks for your help,send_email
+email the ops Let's discuss tomorrow,send_email
+compose message to design re: travel plans,send_email
+email Alex the about launch,send_email
+email Frank the status update,send_email
+send a note to myself titled 'hiring plan',send_email
+draft an email to Henry subject contract,send_email
+email Henry the OKRs,send_email
+send an email to design about metrics to watch,send_email
+send a note to myself titled 'thank you',send_email
+send a note to myself titled 'ideas',send_email
+draft an email to Xena subject status update,send_email
+send an email to design about about launch,send_email
+email Dana the contract,send_email
+email Xena the hiring plan,send_email
+draft an email to Liam subject metrics to watch,send_email
+email the design Quick update,send_email
+send follow-up to Dana with subject travel plans,send_email
+send follow-up to Erin with subject about launch,send_email
+compose message to finance re: hiring plan,send_email
+send an email to finance about hiring plan,send_email
+send follow-up to Yaz with subject OKRs,send_email
+send follow-up to Alex with subject invoice,send_email
+compose message to engineering re: thank you,send_email
+compose message to engineering re: thank you,send_email
+email Tia the travel plans,send_email
+send follow-up to Zed with subject hiring plan,send_email
+email Quinn the hiring plan,send_email
+send an email to ops about metrics to watch,send_email
+send a note to myself titled 'travel plans',send_email
+email John the OKRs,send_email
+send follow-up to Zed with subject contract,send_email
+send an email to ops about about launch,send_email
+email Maya the metrics to watch,send_email
+write an email to Jack: Attaching the document,send_email
+send follow-up to Erin with subject ideas,send_email
+send an email to marketing about OKRs,send_email
+draft an email to Charlie subject thank you,send_email
+turn on bluetooth,none
+increase the brightness,none
+start a timer for three minutes,none
+start a timer for three minutes,none
+what's 15 times 23,none
+who won the game last night,none
+turn on bluetooth,none
+what's my battery percentage,none
+what's 15 times 23,none
+open settings,none
+start a timer for three minutes,none
+take a selfie,none
+start a timer for three minutes,none
+take a selfie,none
+turn on bluetooth,none
+turn on bluetooth,none
+increase the brightness,none
+take a selfie,none
+open the app store,none
+what's the weather like,none
+open settings,none
+what's 15 times 23,none
+increase the brightness,none
+turn on bluetooth,none
+open settings,none
+what's 15 times 23,none
+who won the game last night,none
+what's my battery percentage,none
+what's the weather like,none
+take a selfie,none
+take a selfie,none
+increase the brightness,none
+what's the weather like,none
+who won the game last night,none
+start a timer for three minutes,none
+what's my battery percentage,none
+what's my battery percentage,none
+open settings,none
+turn on bluetooth,none
+start a timer for three minutes,none
+turn on bluetooth,none
+increase the brightness,none
+turn on bluetooth,none
+what's the weather like,none
+what's the weather like,none
+open settings,none
+increase the brightness,none
+open settings,none
+who won the game last night,none
+what's 15 times 23,none
+turn on bluetooth,none
+open the app store,none
+open the app store,none
+take a selfie,none
+turn on bluetooth,none
+what's the weather like,none
+turn on bluetooth,none
+open settings,none
+start a timer for three minutes,none
+increase the brightness,none
+turn on bluetooth,none
+what's 15 times 23,none
+turn on bluetooth,none
+what's the weather like,none
+start a timer for three minutes,none
+what's the weather like,none
+increase the brightness,none
+open the app store,none
+who won the game last night,none
+who won the game last night,none
+start a timer for three minutes,none
+what's the weather like,none
+who won the game last night,none
+who won the game last night,none
+increase the brightness,none
+what's 15 times 23,none
+open settings,none
+increase the brightness,none
+take a selfie,none
+take a selfie,none
+start a timer for three minutes,none
+increase the brightness,none
+what's the weather like,none
+open the app store,none
+open the app store,none
+open the app store,none
+open settings,none
+take a selfie,none
+start a timer for three minutes,none
+who won the game last night,none
+what's my battery percentage,none
+start a timer for three minutes,none
+what's the weather like,none
+turn on bluetooth,none
+take a selfie,none
+who won the game last night,none
+increase the brightness,none
+who won the game last night,none
+open settings,none
+what's my battery percentage,none

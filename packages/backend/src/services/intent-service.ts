@@ -7,6 +7,8 @@
 import { UnifiedLLMService } from './unified-llm-service';
 import * as chrono from 'chrono-node';
 import { createClient } from '@supabase/supabase-js';
+import { ClassificationLogger } from './classification-logger';
+import { intentCache } from './cache-service';
 
 export interface IntentResult {
   intent: string;
@@ -14,6 +16,10 @@ export interface IntentResult {
   slots: Record<string, any>;
   llmFallback?: boolean;
   needsConfirmation?: boolean;
+  metadata?: {
+    provider?: string;
+    responseTime?: number;
+  };
 }
 
 export interface UserCorrection {
@@ -28,11 +34,15 @@ export class IntentService {
   private supabase;
   private intentRegistry: any;
   private knnIndex: Map<string, any[]> = new Map();
+  private logger: ClassificationLogger;
   // private centroids: Map<string, number[]> = new Map();
 
   constructor(
-    private llmService: UnifiedLLMService
+    private llmService: UnifiedLLMService,
+    logger?: ClassificationLogger
   ) {
+    // Initialize logger for tracking classifications
+    this.logger = logger || new ClassificationLogger('v1.0.0');
     // Initialize Supabase for learning storage
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY;
@@ -51,30 +61,105 @@ export class IntentService {
   /**
    * Main classification method - uses LLM initially, can be enhanced with TF.js
    */
-  async classifyIntent(text: string): Promise<IntentResult> {
-    // Step 1: Try kNN lookup for high-confidence matches
-    const knnResult = await this.knnClassify(text);
-    if (knnResult && knnResult.confidence > 0.85) {
-      return knnResult;
+  async classifyIntent(text: string, expectedIntent?: string): Promise<IntentResult> {
+    const startTime = Date.now();
+    
+    // Check cache first
+    const cacheKey = `intent:${text.toLowerCase().trim()}`;
+    const cached = intentCache.get(cacheKey);
+    if (cached && !expectedIntent) { // Don't use cache during testing
+      return {
+        ...cached,
+        metadata: {
+          ...cached.metadata,
+          cached: true,
+          responseTime: Date.now() - startTime
+        }
+      };
     }
-
-    // Step 2: Use LLM for classification (immediate high accuracy)
-    const llmResult = await this.llmClassify(text);
     
-    // Step 3: Extract slots using multiple methods
-    const slots = await this.extractSlots(text, llmResult.intent);
-    
-    // Step 4: Validate and adjust confidence
-    const finalResult = {
-      ...llmResult,
-      slots,
-      needsConfirmation: llmResult.confidence < 0.65
-    };
+    try {
+      // Step 1: Try kNN lookup for high-confidence matches
+      const knnResult = await this.knnClassify(text);
+      if (knnResult && knnResult.confidence > 0.85) {
+        const responseTime = Date.now() - startTime;
+        knnResult.metadata = { responseTime };
+        
+        // Log if expected intent provided
+        if (expectedIntent) {
+          await this.logger.logClassification({
+            inputText: text,
+            expectedIntent,
+            actualIntent: knnResult.intent,
+            confidenceScore: knnResult.confidence,
+            actualSlots: knnResult.slots,
+            responseTimeMs: responseTime,
+            modelVersion: 'v1.0.0',
+            metadata: { source: 'knn' }
+          });
+        }
+        
+        return knnResult;
+      }
 
-    // Step 5: Store for learning (async, non-blocking)
-    this.storeForLearning(text, finalResult);
+      // Step 2: Use LLM for classification (immediate high accuracy)
+      const llmResult = await this.llmClassify(text);
+      
+      // Step 3: Extract slots using multiple methods
+      const slots = await this.extractSlots(text, llmResult.intent);
+      
+      // Step 4: Validate and adjust confidence
+      const responseTime = Date.now() - startTime;
+      const finalResult = {
+        ...llmResult,
+        slots,
+        needsConfirmation: llmResult.confidence < 0.65,
+        metadata: {
+          ...llmResult.metadata,
+          responseTime
+        }
+      };
 
-    return finalResult;
+      // Step 5: Log classification if expected intent provided
+      if (expectedIntent) {
+        await this.logger.logClassification({
+          inputText: text,
+          expectedIntent,
+          actualIntent: finalResult.intent,
+          confidenceScore: finalResult.confidence,
+          actualSlots: finalResult.slots,
+          responseTimeMs: responseTime,
+          modelVersion: 'v1.0.0',
+          metadata: finalResult.metadata
+        });
+      }
+
+      // Step 6: Store for learning (async, non-blocking)
+      this.storeForLearning(text, finalResult);
+
+      // Cache the result
+      intentCache.set(cacheKey, finalResult);
+
+      return finalResult;
+      
+    } catch (error: any) {
+      const responseTime = Date.now() - startTime;
+      
+      // Log error if expected intent provided
+      if (expectedIntent) {
+        await this.logger.logClassification({
+          inputText: text,
+          expectedIntent,
+          actualIntent: null,
+          confidenceScore: 0,
+          responseTimeMs: responseTime,
+          modelVersion: 'v1.0.0',
+          errorMessage: error.message
+        });
+      }
+      
+      throw error;
+    }
   }
 
   /**
@@ -82,6 +167,9 @@ export class IntentService {
    */
   private async llmClassify(text: string): Promise<IntentResult> {
     const systemPrompt = `You are an intent classifier for a personal assistant.
+    
+    IMPORTANT: Output ONLY valid JSON. Do not include any thinking, explanation, or other text.
+    
     Classify the user's request into one of these intents:
     - create_event: scheduling calendar events, meetings, appointments
     - add_reminder: setting reminders, alerts, notifications
@@ -101,7 +189,7 @@ export class IntentService {
     - note_body: note content
     - reminder_text: what to be reminded about
     
-    Respond in JSON format:
+    Output exactly this JSON structure with no additional text:
     {
       "intent": "string",
       "confidence": 0.0-1.0,
@@ -110,11 +198,11 @@ export class IntentService {
 
     try {
       const response = await this.llmService.generateCompletion({
-        prompt: `Classify this request: "${text}"`,
+        prompt: `Classify this request: "${text}"\n\nRespond with JSON only:`,
         systemPrompt,
         responseFormat: 'json',
         complexity: 'low', // Use fast model for classification
-        maxTokens: 200
+        maxTokens: 1000 // Slightly increased to ensure full JSON output
       });
 
       // Clean response content of any thinking tags (from DeepSeek models)
@@ -123,10 +211,29 @@ export class IntentService {
       // Remove <think> tags and their content
       cleanContent = cleanContent.replace(/<think>[\s\S]*?<\/think>/gi, '');
       
-      // Extract JSON from the response (it might be wrapped in other text)
-      const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
+      // Try to find JSON in the response
+      // First try to find a complete JSON object
+      let jsonMatch = cleanContent.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
+      
+      // If no match, try a more aggressive pattern
       if (!jsonMatch) {
-        console.error('No JSON found in LLM response:', cleanContent);
+        // Look for anything that starts with { and ends with }
+        const startIdx = cleanContent.indexOf('{');
+        const endIdx = cleanContent.lastIndexOf('}');
+        
+        if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+          const possibleJson = cleanContent.substring(startIdx, endIdx + 1);
+          try {
+            JSON.parse(possibleJson); // Test if it's valid
+            jsonMatch = [possibleJson];
+          } catch {
+            // Not valid JSON
+          }
+        }
+      }
+      
+      if (!jsonMatch) {
+        console.error('No JSON found in LLM response:', cleanContent.substring(0, 200));
         throw new Error('Invalid JSON response from LLM');
       }
       
@@ -138,7 +245,11 @@ export class IntentService {
       const parsed = JSON.parse(cleanContent);
       return {
         ...parsed,
-        llmFallback: true
+        llmFallback: true,
+        metadata: {
+          provider: response.provider,
+          responseTime: response.responseTime
+        }
       };
     } catch (error) {
       console.error('LLM classification failed:', error);

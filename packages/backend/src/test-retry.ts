@@ -80,8 +80,6 @@ async function testRetryLogic() {
     console.log(`   ${stat.name}:`);
     console.log(`     - Healthy: ${stat.healthy}`);
     console.log(`     - Model: ${stat.model}`);
-    console.log(`     - Requests served: ${stat.requestsServed}`);
-    console.log(`     - Priority: ${stat.priority}`);
     console.log(`     - Available: ${stat.available}`);
   });
 

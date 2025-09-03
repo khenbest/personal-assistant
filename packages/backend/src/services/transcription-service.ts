@@ -13,10 +13,10 @@ export interface TranscriptionResult {
 }
 
 export class TranscriptionService {
-  private llmService: UnifiedLLMService;
+  // private llmService: UnifiedLLMService; // Currently unused
 
-  constructor(llmService: UnifiedLLMService) {
-    this.llmService = llmService;
+  constructor(_llmService: UnifiedLLMService) {
+    // this.llmService = llmService; // Store when needed
   }
 
   /**
@@ -74,7 +74,7 @@ export class TranscriptionService {
         throw new Error(`Whisper API error: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await response.json() as any;
       
       return {
         text: result.text,
@@ -90,22 +90,23 @@ export class TranscriptionService {
   /**
    * Transcribe using Google Speech-to-Text
    */
-  private async transcribeWithGoogle(audioData: string | Buffer, format: string): Promise<TranscriptionResult> {
+  private async transcribeWithGoogle(_audioData: string | Buffer, _format: string): Promise<TranscriptionResult> {
     // Implementation for Google Speech-to-Text API
     // This would require @google-cloud/speech package
     try {
-      const audioBytes = typeof audioData === 'string' ? audioData : audioData.toString('base64');
+      // const audioBytes = typeof audioData === 'string' ? audioData : audioData.toString('base64');
       
-      const request = {
-        audio: {
-          content: audioBytes,
-        },
-        config: {
-          encoding: format === 'wav' ? 'LINEAR16' : 'MP3',
-          sampleRateHertz: 16000,
-          languageCode: 'en-US',
-        },
-      };
+      // Unused variable for now - would be used with Google client
+      // const _request = {
+      //   audio: {
+      //     content: audioBytes,
+      //   },
+      //   config: {
+      //     encoding: format === 'wav' ? 'LINEAR16' : 'MP3',
+      //     sampleRateHertz: 16000,
+      //     languageCode: 'en-US',
+      //   },
+      // };
 
       // Would use Google client here
       // const [response] = await speechClient.recognize(request);
@@ -121,7 +122,7 @@ export class TranscriptionService {
   /**
    * Transcribe using AssemblyAI
    */
-  private async transcribeWithAssemblyAI(audioData: string | Buffer, format: string): Promise<TranscriptionResult> {
+  private async transcribeWithAssemblyAI(audioData: string | Buffer, _format: string): Promise<TranscriptionResult> {
     try {
       // Upload audio
       const uploadResponse = await fetch('https://api.assemblyai.com/v2/upload', {
@@ -133,7 +134,8 @@ export class TranscriptionService {
         body: typeof audioData === 'string' ? Buffer.from(audioData, 'base64') : audioData,
       });
 
-      const { upload_url } = await uploadResponse.json();
+      const uploadResult = await uploadResponse.json() as any;
+      const upload_url = uploadResult.upload_url;
 
       // Request transcription
       const transcriptResponse = await fetch('https://api.assemblyai.com/v2/transcript', {
@@ -148,10 +150,10 @@ export class TranscriptionService {
         }),
       });
 
-      const transcript = await transcriptResponse.json();
+      const transcript = await transcriptResponse.json() as any;
 
       // Poll for completion
-      let result;
+      let result: any;
       while (true) {
         const pollingResponse = await fetch(`https://api.assemblyai.com/v2/transcript/${transcript.id}`, {
           headers: {
@@ -161,9 +163,9 @@ export class TranscriptionService {
         
         result = await pollingResponse.json();
         
-        if (result.status === 'completed') {
+        if ((result as any).status === 'completed') {
           break;
-        } else if (result.status === 'error') {
+        } else if ((result as any).status === 'error') {
           throw new Error('Transcription failed');
         }
         
@@ -172,10 +174,10 @@ export class TranscriptionService {
       }
 
       return {
-        text: result.text,
-        confidence: result.confidence || 0.9,
+        text: (result as any).text,
+        confidence: (result as any).confidence || 0.9,
         language: 'en',
-        duration: result.audio_duration,
+        duration: (result as any).audio_duration,
       };
     } catch (error) {
       console.error('AssemblyAI transcription failed:', error);
@@ -202,7 +204,7 @@ export class TranscriptionService {
     const text = mockCommands[Math.floor(Math.random() * mockCommands.length)];
     
     return {
-      text,
+      text: text!,
       confidence: 0.95,
       language: 'en',
       duration: 2.5,

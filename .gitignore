@@ -71,5 +71,10 @@ supabase/.temp
 # TypeScript
 *.tsbuildinfo
 
+# Compiled JS in source directories (keep only in dist/)
+packages/*/src/**/*.js
+packages/*/src/**/*.js.map
+!packages/*/src/**/*.config.js
+
 # Claude artifacts
 .claude/

@@ -8,7 +8,6 @@ import { z } from 'zod';
 import { IntentService } from '../services/intent-service';
 import { CalendarService } from '../services/calendar-service';
 import { UnifiedLLMService } from '../services/unified-llm-service';
-import * as Speech from '@fastify/multipart';
 
 const voiceCommandSchema = z.object({
   text: z.string(),

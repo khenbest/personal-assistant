@@ -18,7 +18,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 async function addDurationColumn() {
   try {
     // Check if column exists first
-    const { data: columns, error: checkError } = await supabase.rpc('get_table_columns', {
+    const { error: checkError } = await supabase.rpc('get_table_columns', {
       table_name: 'calendar_events'
     }).single();
 

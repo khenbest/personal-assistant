@@ -6,7 +6,6 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
@@ -117,7 +116,7 @@ async function setupDatabase() {
       // For now, we'll create tables using the client
       
       // First, check if table exists
-      const { data: existingTable, error: checkError } = await supabase
+      const { error: checkError } = await supabase
         .from(table.name)
         .select('count')
         .limit(1);
@@ -191,7 +190,7 @@ async function setupWithCLI() {
     console.log(result);
     
   } catch (error) {
-    console.log('❌ CLI execution failed:', error.message);
+    console.log('❌ CLI execution failed:', error instanceof Error ? error.message : String(error));
     console.log('   Please ensure Supabase CLI is configured properly');
   }
 }

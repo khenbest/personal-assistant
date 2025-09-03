@@ -144,7 +144,7 @@ export default async function intentRoutes(fastify: FastifyInstance) {
   );
 
   // Stats endpoint for monitoring accuracy
-  fastify.get('/api/intent/stats', async (request, reply) => {
+  fastify.get('/api/intent/stats', async (_request, reply) => {
     try {
       const stats = await intentService.getClassificationStats();
       return {
@@ -161,16 +161,15 @@ export default async function intentRoutes(fastify: FastifyInstance) {
   });
 
   // Health check endpoint
-  fastify.get('/api/intent/health', async (request, reply) => {
+  fastify.get('/api/intent/health', async (_request, reply) => {
     try {
       // Check if LLM service is healthy
-      const providers = unifiedLLMService.getHealthyProviders();
-      const isHealthy = providers.length > 0;
+      const isHealthy = await unifiedLLMService.checkHealth();
       
       return {
         success: true,
         healthy: isHealthy,
-        availableProviders: providers,
+        availableProviders: isHealthy ? ['ollama'] : [],
         timestamp: new Date().toISOString()
       };
     } catch (error) {

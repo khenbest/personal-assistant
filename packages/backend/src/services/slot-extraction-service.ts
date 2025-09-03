@@ -87,7 +87,7 @@ export class SlotExtractionService {
       const first = results[0];
       
       // Handle date ranges
-      if (first.start && first.end) {
+      if (first && first.start && first.end) {
         slots.datetime_range = {
           start: first.start.date().toISOString(),
           end: first.end.date().toISOString()
@@ -98,12 +98,12 @@ export class SlotExtractionService {
         slots.duration_min = Math.round(durationMs / 60000);
       } 
       // Handle single points
-      else if (first.start) {
+      else if (first && first.start) {
         slots.datetime_point = first.start.date().toISOString();
         
         // Check for implicit duration
         const durationMatch = text.match(/for\s+(\d+)\s*(hour|hr|minute|min)/i);
-        if (durationMatch) {
+        if (durationMatch && durationMatch[1] && durationMatch[2]) {
           const value = parseInt(durationMatch[1]);
           const unit = durationMatch[2].toLowerCase();
           slots.duration_min = unit.includes('hour') ? value * 60 : value;
@@ -149,8 +149,8 @@ export class SlotExtractionService {
         const toMatch = text.match(/to\s+([^,;]+(?:,\s*[^,;]+)*)/i);
         const ccMatch = text.match(/cc\s+([^,;]+(?:,\s*[^,;]+)*)/i);
         
-        slots.email_to = toMatch ? this.parseEmailList(toMatch[1]) : emails;
-        if (ccMatch) {
+        slots.email_to = toMatch && toMatch[1] ? this.parseEmailList(toMatch[1]) : emails;
+        if (ccMatch && ccMatch[1]) {
           slots.email_cc = this.parseEmailList(ccMatch[1]);
         }
       } else if (intent === 'read_email') {
@@ -220,7 +220,7 @@ export class SlotExtractionService {
         
         // First line as title, rest as body
         const lines = noteContent.split(/[.!?\n]/);
-        if (lines.length > 1) {
+        if (lines.length > 1 && lines[0]) {
           slots.note_title = lines[0].trim();
           slots.note_body = lines.slice(1).join('. ').trim();
         } else {
@@ -233,13 +233,13 @@ export class SlotExtractionService {
       case 'send_email':
         // Extract subject
         const subjectMatch = text.match(/(?:subject|re|regarding)[:\s]+([^,.]+)/i);
-        if (subjectMatch) {
+        if (subjectMatch && subjectMatch[1]) {
           slots.email_subject = subjectMatch[1].trim();
         }
         
         // Extract body
         const bodyMatch = text.match(/(?:body|saying|write|message)[:\s]+(.+)$/i);
-        if (bodyMatch) {
+        if (bodyMatch && bodyMatch[1]) {
           slots.email_body = bodyMatch[1].trim();
         }
         break;
@@ -278,7 +278,8 @@ export class SlotExtractionService {
    */
   private extractEventTitle(text: string): string {
     // Remove temporal expressions
-    let title = text.replace(chrono.parse(text)[0]?.text || '', '');
+    const chronoResults = chrono.parse(text);
+    let title = text.replace(chronoResults[0]?.text || '', '');
     
     // Remove common prefixes
     title = title.replace(/^(schedule|book|add|create|set up|plan)\s+(a\s+)?/i, '');
@@ -296,13 +297,20 @@ export class SlotExtractionService {
     if (title.length < 3) {
       // Look for quoted text
       const quotedMatch = text.match(/["']([^"']+)["']/);
-      if (quotedMatch) {
+      if (quotedMatch && quotedMatch[1]) {
         title = quotedMatch[1];
       } else {
         // Use the most important words
         const doc = nlp.readDoc(text);
-        const nouns = doc.tokens().filter(t => t.out() && t.pos() === 'NOUN').out();
-        title = nouns.slice(0, 3).join(' ');
+        const tokens = doc.tokens();
+        const nouns = tokens.filter((t: any) => {
+          try {
+            return t.out() && t.pos() === 'NOUN';
+          } catch {
+            return false;
+          }
+        }).out();
+        title = Array.isArray(nouns) ? nouns.slice(0, 3).join(' ') : '';
       }
     }
     
@@ -386,13 +394,15 @@ export class SlotExtractionService {
     const required = requiredFields[intent] || [];
     const missing = required.filter(field => !slots[field as keyof ExtractedSlots]);
     
-    return missing.length > 0 || (slots.confidence && slots.confidence < 0.7);
+    return missing.length > 0 || (slots.confidence !== undefined && slots.confidence < 0.7);
   }
 
   /**
    * LLM-based extraction for complex cases
    */
   private async llmExtraction(text: string, intent: string, currentSlots: ExtractedSlots): Promise<Partial<ExtractedSlots>> {
+    const systemPrompt = `IMPORTANT: Output ONLY valid JSON. Do not include any thinking, explanation, or other text.`;
+    
     const prompt = `Extract slots from this ${intent} request: "${text}"
     
     Current extracted slots: ${JSON.stringify(currentSlots, null, 2)}
@@ -405,18 +415,48 @@ export class SlotExtractionService {
     - location
     - body/content
     
-    Return only the additional or corrected slots as JSON.`;
+    Output only the additional or corrected slots as valid JSON:`;
     
     try {
       const response = await this.llmService.generateCompletion({
         prompt,
-        systemPrompt: '',
+        systemPrompt,
         responseFormat: 'json',
         complexity: 'low',
-        maxTokens: 200
+        maxTokens: 300
       });
       
-      return JSON.parse(response.content);
+      // Clean response content of any thinking tags
+      let cleanContent = response.content;
+      
+      // Remove <think> tags and their content
+      cleanContent = cleanContent.replace(/<think>[\s\S]*?<\/think>/gi, '');
+      
+      // Try to find JSON in the response
+      let jsonMatch = cleanContent.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
+      
+      if (!jsonMatch) {
+        // Look for anything that starts with { and ends with }
+        const startIdx = cleanContent.indexOf('{');
+        const endIdx = cleanContent.lastIndexOf('}');
+        
+        if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+          const possibleJson = cleanContent.substring(startIdx, endIdx + 1);
+          try {
+            JSON.parse(possibleJson); // Test if it's valid
+            jsonMatch = [possibleJson];
+          } catch {
+            // Not valid JSON
+          }
+        }
+      }
+      
+      if (!jsonMatch) {
+        console.error('No JSON found in LLM response for slot extraction');
+        return {};
+      }
+      
+      return JSON.parse(jsonMatch[0]);
     } catch (error) {
       console.error('LLM extraction failed:', error);
       return {};
@@ -495,8 +535,8 @@ export class SlotExtractionService {
     
     // Learn contact mappings
     if (corrections.email_to || corrections.attendees) {
-      const contacts = this.slotOverrides.get('contacts') || {};
-      // Store name-to-email mappings
+      // const contacts = this.slotOverrides.get('contacts') || {};
+      // TODO: Store name-to-email mappings
       // Implementation depends on how names are provided
     }
     

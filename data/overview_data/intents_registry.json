@@ -1,0 +1,97 @@
+{
+  "version": "1.0",
+  "confirmThreshold": 0.81,
+  "autoThreshold": 0.91,
+  "intents": {
+    "create_event": {
+      "required": [
+        "title",
+        "datetime_point|datetime_range"
+      ],
+      "defaults": {
+        "duration_min": 30
+      },
+      "parsers": {
+        "datetime_point": "chrono",
+        "datetime_range": "chrono_range",
+        "title": "quoted_or_after_keywords(event|meeting|schedule|block time|called)"
+      },
+      "confirm": "Create event \"{title}\" {when}?",
+      "handler": "calendar.createEvent"
+    },
+    "add_reminder": {
+      "required": [
+        "title",
+        "datetime_point?"
+      ],
+      "parsers": {
+        "datetime_point": "chrono_or_relative_iso",
+        "title": "after_keywords(remind|nudge|set a reminder|add reminder)"
+      },
+      "confirm": "Set reminder \"{title}\" {when}?",
+      "handler": "reminders.create"
+    },
+    "create_note": {
+      "required": [
+        "note_body"
+      ],
+      "parsers": {
+        "note_body": "after_keywords(note|capture|append|save)",
+        "title": "after_keywords(titled)"
+      },
+      "confirm": "Add to Apple Notes now?",
+      "handler": "notes.appendOrCreate"
+    },
+    "read_email": {
+      "required": [],
+      "parsers": {
+        "email_from": "extract_email_or_name",
+        "time_window": "chrono_window",
+        "label": "after_keywords(label|in)",
+        "email_subject": "after_keywords(subject|re)"
+      },
+      "confirm": null,
+      "handler": "gmail.read"
+    },
+    "send_email": {
+      "required": [
+        "email_to",
+        "email_subject?",
+        "email_body?"
+      ],
+      "parsers": {
+        "email_to": "extract_emails_or_names",
+        "email_subject": "after_keywords(subject|re)",
+        "email_body": "after_keywords(body|say|message|:)"
+      },
+      "confirm": "Compose or send email{to}?",
+      "handler": "email.composeOrSend"
+    },
+    "none": {
+      "required": [],
+      "parsers": {},
+      "confirm": null,
+      "handler": "none.ignore"
+    }
+  },
+  "handlers": {
+    "calendar.createEvent": {
+      "module": "@app/adapters/calendar"
+    },
+    "reminders.create": {
+      "module": "@app/adapters/reminders"
+    },
+    "notes.appendOrCreate": {
+      "module": "@app/adapters/notes"
+    },
+    "gmail.read": {
+      "module": "@app/adapters/gmail"
+    },
+    "email.composeOrSend": {
+      "module": "@app/adapters/email"
+    },
+    "none.ignore": {
+      "module": "@app/adapters/none"
+    }
+  }
+}

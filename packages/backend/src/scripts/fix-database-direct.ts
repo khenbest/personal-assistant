@@ -26,7 +26,7 @@ async function fixDatabase() {
   
   try {
     // First, let's test the connection by checking if we can query the table
-    const { data: existingEvents, error: queryError } = await supabase
+    const { error: queryError } = await supabase
       .from('calendar_events')
       .select('*')
       .limit(1);

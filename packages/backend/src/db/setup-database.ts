@@ -40,7 +40,7 @@ async function setupDatabase() {
     console.log('=====================================');
     
     // Test connection
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('intent_predictions')
       .select('count')
       .limit(1);
