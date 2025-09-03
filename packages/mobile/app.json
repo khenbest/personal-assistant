@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "Kenny Assistant",
-    "slug": "kenny-assistant",
+    "name": "Eidolon",
+    "slug": "eidolon",
+    "owner": "khenbest",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,10 +14,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kenny.assistant",
+      "bundleIdentifier": "com.khenbest.eidolon",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "This app uses the microphone for voice commands.",
-        "NSSpeechRecognitionUsageDescription": "This app uses speech recognition to convert your voice to text."
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access the microphone for voice commands",
+        "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to recognize your speech",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -24,11 +26,37 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["RECORD_AUDIO"],
-      "package": "com.kenny.assistant"
+      "permissions": [
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.khenbest.eidolon"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "Eidolon",
+      "shortName": "Eidolon",
+      "lang": "en-US",
+      "scope": "/",
+      "startUrl": "/",
+      "display": "standalone",
+      "themeColor": "#007AFF",
+      "backgroundColor": "#ffffff",
+      "preferRelatedApplications": false
+    },
+    "plugins": [
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access the microphone for voice commands",
+          "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to recognize your speech"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "fe89bec6-7708-4744-b67c-3737ff45f90c"
+      }
     }
   }
 }

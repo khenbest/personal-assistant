@@ -10,10 +10,10 @@ import {
 } from 'react-native';
 import { GiftedChat, IMessage, Send, InputToolbar, Composer } from 'react-native-gifted-chat';
 // import LottieView from 'lottie-react-native'; // TODO: Add animations later
-import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
-import { apiService } from '../services/api';
+import { sendVoiceCommand, sendTextCommand } from '../services/api';
+import { VoiceInput } from '../components/VoiceInput';
 
 // Design system colors
 const colors = {
@@ -27,10 +27,9 @@ const colors = {
 
 export function ChatScreen() {
   const [messages, setMessages] = useState<IMessage[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showVoiceInput, setShowVoiceInput] = useState(false);
 
   useEffect(() => {
     // Initialize with welcome message
@@ -46,9 +45,6 @@ export function ChatScreen() {
         },
       },
     ]);
-
-    // Request audio permissions
-    Audio.requestPermissionsAsync();
   }, []);
 
   const onSend = useCallback(async (newMessages: IMessage[] = []) => {
@@ -59,13 +55,13 @@ export function ChatScreen() {
       setIsLoading(true);
 
       try {
-        // Send to backend
-        const response = await apiService.sendCommand(userMessage);
+        // Send to backend using text command
+        const response = await sendTextCommand(userMessage);
         
         // Add AI response
         const aiMessage: IMessage = {
           _id: Math.random(),
-          text: response.message || 'I processed your request.',
+          text: response.spokenResponse || response.message || 'I processed your request.',
           createdAt: new Date(),
           user: {
             _id: 2,
@@ -76,8 +72,10 @@ export function ChatScreen() {
 
         setMessages(previousMessages => GiftedChat.append(previousMessages, [aiMessage]));
         
-        // Auto-play TTS for AI response
-        speakMessage(aiMessage.text);
+        // Auto-play TTS for AI response if available
+        if (response.spokenResponse) {
+          speakMessage(response.spokenResponse);
+        }
       } catch (error) {
         console.error('Error sending message:', error);
         const errorMessage: IMessage = {
@@ -107,53 +105,42 @@ export function ChatScreen() {
     });
   };
 
-  const startRecording = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      setRecording(recording);
-      setIsRecording(true);
-    } catch (err) {
-      console.error('Failed to start recording', err);
+  const handleVoiceCommand = useCallback((result: any) => {
+    // Handle voice command result
+    if (result.type === 'voice' && result.text) {
+      // Add user's voice message to chat
+      const userMessage: IMessage = {
+        _id: Math.random(),
+        text: result.text,
+        createdAt: new Date(),
+        user: {
+          _id: 1,
+        },
+      };
+      setMessages(previousMessages => GiftedChat.append(previousMessages, [userMessage]));
+      
+      // Add AI response if available
+      if (result.result?.success && result.result?.spokenResponse) {
+        const aiMessage: IMessage = {
+          _id: Math.random(),
+          text: result.result.spokenResponse,
+          createdAt: new Date(),
+          user: {
+            _id: 2,
+            name: 'Assistant',
+            avatar: '🤖',
+          },
+        };
+        setMessages(previousMessages => GiftedChat.append(previousMessages, [aiMessage]));
+      }
     }
-  };
-
-  const stopRecording = async () => {
-    if (!recording) return;
-
-    setIsRecording(false);
-    await recording.stopAndUnloadAsync();
-    const uri = recording.getURI();
-    setRecording(null);
-
-    // TODO: Send audio to speech-to-text service
-    // For now, we'll use a placeholder
-    const transcribedText = "This is a placeholder for speech-to-text";
     
-    const userMessage: IMessage = {
-      _id: Math.random(),
-      text: transcribedText,
-      createdAt: new Date(),
-      user: {
-        _id: 1,
-      },
-    };
-
-    onSend([userMessage]);
-  };
+    // Hide voice input after processing
+    setShowVoiceInput(false);
+  }, []);
 
   const handleVoicePress = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
+    setShowVoiceInput(!showVoiceInput);
   };
 
   const renderInputToolbar = (props: any) => (
@@ -179,21 +166,34 @@ export function ChatScreen() {
     </Send>
   );
 
-  const renderAccessory = () => (
-    <View style={styles.accessoryContainer}>
-      <TouchableOpacity
-        style={[styles.voiceButton, isRecording && styles.voiceButtonActive]}
-        onPress={handleVoicePress}
-        activeOpacity={0.7}
-      >
-        <Ionicons 
-          name={isRecording ? "stop" : "mic"} 
-          size={28} 
-          color={colors.background} 
-        />
-      </TouchableOpacity>
-    </View>
-  );
+  const renderAccessory = () => {
+    if (showVoiceInput) {
+      return (
+        <View style={styles.accessoryContainer}>
+          <VoiceInput 
+            onCommand={handleVoiceCommand}
+            showTextInput={false}
+          />
+        </View>
+      );
+    }
+    
+    return (
+      <View style={styles.accessoryContainer}>
+        <TouchableOpacity
+          style={styles.voiceButton}
+          onPress={handleVoicePress}
+          activeOpacity={0.7}
+        >
+          <Ionicons 
+            name="mic" 
+            size={28} 
+            color={colors.background} 
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -289,13 +289,14 @@ const styles = StyleSheet.create({
     marginLeft: 60,
   },
   accessoryContainer: {
-    height: 60,
+    minHeight: 60,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.background,
     borderTopWidth: 1,
     borderTopColor: colors.border,
+    paddingVertical: 10,
   },
   voiceButton: {
     width: 56,

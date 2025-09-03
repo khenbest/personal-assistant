@@ -16,7 +16,9 @@
     "lint": "lerna run lint",
     "format": "lerna run format",
     "clean": "lerna clean --yes && rm -rf node_modules",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.4.3",
@@ -39,5 +41,10 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "expo": "~53.0.22",
+    "react": "19.0.0",
+    "react-native": "0.79.6"
   }
 }

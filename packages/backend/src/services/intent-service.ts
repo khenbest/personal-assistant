@@ -28,7 +28,7 @@ export class IntentService {
   private supabase;
   private intentRegistry: any;
   private knnIndex: Map<string, any[]> = new Map();
-  private centroids: Map<string, number[]> = new Map();
+  // private centroids: Map<string, number[]> = new Map();
 
   constructor(
     private llmService: UnifiedLLMService
@@ -119,9 +119,21 @@ export class IntentService {
 
       // Clean response content of any thinking tags (from DeepSeek models)
       let cleanContent = response.content;
-      if (cleanContent.includes('<think>')) {
-        cleanContent = cleanContent.replace(/<think>[\s\S]*?<\/think>\s*/g, '').trim();
+      
+      // Remove <think> tags and their content
+      cleanContent = cleanContent.replace(/<think>[\s\S]*?<\/think>/gi, '');
+      
+      // Extract JSON from the response (it might be wrapped in other text)
+      const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        console.error('No JSON found in LLM response:', cleanContent);
+        throw new Error('Invalid JSON response from LLM');
       }
+      
+      cleanContent = jsonMatch[0];
+      
+      // Clean up any remaining whitespace
+      cleanContent = cleanContent.trim();
       
       const parsed = JSON.parse(cleanContent);
       return {
@@ -150,9 +162,9 @@ export class IntentService {
 
     if (data && data.length > 0) {
       return {
-        intent: data[0].corrected_intent,
+        intent: data[0]?.corrected_intent || 'none',
         confidence: 0.95, // High confidence for exact matches
-        slots: data[0].corrected_slots || {}
+        slots: data[0]?.corrected_slots || {}
       };
     }
 
@@ -195,12 +207,12 @@ export class IntentService {
     const chronoResults = chrono.parse(text, new Date(), { forwardDate: true });
     if (chronoResults.length > 0) {
       const first = chronoResults[0];
-      if (first.start && first.end) {
+      if (first && first.start && first.end) {
         slots.datetime_range = {
           start: first.start.date().toISOString(),
           end: first.end.date().toISOString()
         };
-      } else if (first.start) {
+      } else if (first && first.start) {
         slots.datetime_point = first.start.date().toISOString();
       }
     }
@@ -219,8 +231,8 @@ export class IntentService {
     // Extract duration
     const durationMatch = text.match(/(\d+)\s*(hour|hr|minute|min)/i);
     if (durationMatch) {
-      const value = parseInt(durationMatch[1]);
-      const unit = durationMatch[2].toLowerCase();
+      const value = parseInt(durationMatch[1] || '60');
+      const unit = (durationMatch[2] || 'minutes').toLowerCase();
       slots.duration_min = unit.includes('hour') ? value * 60 : value;
     }
 
@@ -248,10 +260,10 @@ export class IntentService {
       case 'send_email':
         // Extract subject and body
         const subjectMatch = text.match(/subject[:\s]+([^,]+)/i);
-        if (subjectMatch) slots.email_subject = subjectMatch[1].trim();
+        if (subjectMatch && subjectMatch[1]) slots.email_subject = subjectMatch[1].trim();
         
         const bodyMatch = text.match(/body[:\s]+(.+)$/i);
-        if (bodyMatch) slots.email_body = bodyMatch[1].trim();
+        if (bodyMatch && bodyMatch[1]) slots.email_body = bodyMatch[1].trim();
         break;
     }
 

@@ -1,12 +1,15 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { llmService } from '../services/llm-service';
+import { IntentService } from '../services/intent-service';
+import { CalendarService } from '../services/calendar-service';
+import { UnifiedLLMService } from '../services/unified-llm-service';
 import { db } from '../db/supabase';
 
 const commandSchema = z.object({
   command: z.string(),
   type: z.enum(['schedule', 'query', 'task', 'reminder', 'auto', 'test']).optional(),
   options: z.any().optional(),
+  userId: z.string().optional(),
 });
 
 const querySchema = z.object({
@@ -14,51 +17,40 @@ const querySchema = z.object({
   context: z.string().optional(),
 });
 
+// Initialize services
+const llmService = new UnifiedLLMService();
+const intentService = new IntentService(llmService);
+const calendarService = new CalendarService(intentService);
+
 export async function commandRoutes(fastify: FastifyInstance) {
-  // Process natural language commands
+  // Process natural language commands with intent classification
   fastify.post('/command', async (request, reply) => {
-    const { command } = commandSchema.parse(request.body);
+    const { command, userId } = commandSchema.parse(request.body);
     
     try {
-      // Parse the command using LLM
-      const parsed = await llmService.parseCommand(command);
+      // Classify intent using IntentService
+      const intentResult = await intentService.classifyIntent(command);
       
       // Handle different intents
-      switch (parsed.intent) {
-        case 'schedule': {
-          // Create calendar event
-          const event = {
-            user_id: 'demo-user', // TODO: Get from auth
-            title: parsed.entities.title || 'New Event',
-            description: parsed.entities.description,
-            start_time: parsed.entities.date?.toISOString() || new Date().toISOString(),
-            end_time: new Date(parsed.entities.date?.getTime() || Date.now() + 3600000).toISOString(),
-            location: parsed.entities.location,
-            attendees: parsed.entities.attendees,
-          };
+      switch (intentResult.intent) {
+        case 'create_event': {
+          // Use CalendarService for event creation
+          const result = await calendarService.processVoiceCommand(command, userId || 'demo-user');
           
-          // Save to database if Supabase is configured
-          let savedEvent;
-          try {
-            savedEvent = await db.createCalendarEvent(event);
-          } catch (dbError) {
-            console.warn('Database not configured, returning mock event');
-            savedEvent = { ...event, id: 'mock-id' };
+          if (!result.success) {
+            return reply.status(400).send(result);
           }
-          
-          // Generate response
-          const response = await llmService.generateResponse(
-            `Event scheduled: ${event.title}`,
-            command,
-            'friendly'
-          );
           
           return {
             success: true,
-            intent: parsed.intent,
-            event: savedEvent,
-            message: response,
-            confidence: parsed.confidence,
+            intent: intentResult.intent,
+            confidence: intentResult.confidence,
+            event: result.event,
+            message: result.message,
+            spokenResponse: result.spokenResponse,
+            needsConfirmation: result.needsConfirmation,
+            options: result.options,
+            predictionId: result.predictionId
           };
         }
         
@@ -66,10 +58,10 @@ export async function commandRoutes(fastify: FastifyInstance) {
           // Create task
           const task = {
             user_id: 'demo-user', // TODO: Get from auth
-            title: parsed.entities.title || 'New Task',
-            description: parsed.entities.description,
-            priority: (parsed.entities.priority as any) || 'medium',
-            due_date: parsed.entities.date?.toISOString(),
+            title: intentResult.slots?.title || 'New Task',
+            description: intentResult.slots?.description,
+            priority: (intentResult.slots?.priority as any) || 'medium',
+            due_date: intentResult.slots?.date?.toISOString(),
           };
           
           let savedTask;
@@ -80,34 +72,26 @@ export async function commandRoutes(fastify: FastifyInstance) {
             savedTask = { ...task, id: 'mock-id', status: 'pending' };
           }
           
-          const response = await llmService.generateResponse(
-            `Task created: ${task.title}`,
-            command,
-            'friendly'
-          );
+          const response = `Task created: ${task.title}`;
           
           return {
             success: true,
-            intent: parsed.intent,
+            intent: intentResult.intent,
             task: savedTask,
             message: response,
-            confidence: parsed.confidence,
+            confidence: intentResult.confidence,
           };
         }
         
         default: {
           // General query or unknown command
-          const response = await llmService.generateResponse(
-            'General assistance',
-            command,
-            'friendly'
-          );
+          const response = 'I can help you with scheduling events, creating tasks, and setting reminders. Please try a command like "Schedule a meeting tomorrow at 3pm".';
           
           return {
             success: true,
-            intent: parsed.intent,
+            intent: intentResult.intent,
             message: response,
-            confidence: parsed.confidence,
+            confidence: intentResult.confidence,
           };
         }
       }
@@ -148,7 +132,7 @@ export async function commandRoutes(fastify: FastifyInstance) {
         ${context || ''}
       `;
       
-      const answer = await llmService.generateResponse(contextStr, question, 'friendly');
+      const answer = `Based on your data: ${contextStr}\n\nAnswer: I can see you have ${events.length} upcoming events and ${tasks.length} pending tasks. ${question.toLowerCase().includes('next') ? 'Your next event is coming up soon.' : 'How can I help you manage them?'}`;
       
       return {
         success: true,

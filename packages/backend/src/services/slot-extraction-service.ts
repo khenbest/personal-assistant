@@ -162,9 +162,14 @@ export class SlotExtractionService {
     const entities = doc.entities().out();
     if (entities.length > 0 && intent === 'create_event') {
       // Try to identify attendees from person entities
-      const people = doc.entities().filter(e => e.out() && e.type() === 'PERSON').out();
-      if (people.length > 0) {
-        slots.attendees = people;
+      // In WinkNLP, entities are returned as strings when using .out()
+      // We'll use the entities directly as potential attendees
+      const potentialAttendees = entities.filter(entity => {
+        // Check if the entity looks like a name (capitalized words)
+        return entity && /^[A-Z][a-z]+ ?[A-Z]?[a-z]*/.test(entity);
+      });
+      if (potentialAttendees.length > 0) {
+        slots.attendees = potentialAttendees;
       }
     }
     
@@ -403,8 +408,9 @@ export class SlotExtractionService {
     Return only the additional or corrected slots as JSON.`;
     
     try {
-      const response = await this.llmService.process({
+      const response = await this.llmService.generateCompletion({
         prompt,
+        systemPrompt: '',
         responseFormat: 'json',
         complexity: 'low',
         maxTokens: 200
