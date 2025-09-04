@@ -4,8 +4,8 @@
  */
 
 import { CalendarService } from '../src/services/calendar-service';
-import { IntentService } from '../src/services/intent-service';
-import { UnifiedLLMService } from '../src/services/unified-llm-service';
+import { IntentClassificationService } from '../src/services/intent-classification-service';
+import { LLMService } from '../src/services/llm-service';
 import { supabase } from '../src/db/supabase';
 
 // Mock Supabase
@@ -32,12 +32,12 @@ jest.mock('../src/db/supabase', () => ({
 
 describe('CalendarService', () => {
   let calendarService: CalendarService;
-  let intentService: IntentService;
-  let llmService: UnifiedLLMService;
+  let intentService: IntentClassificationService;
+  let llmService: LLMService;
 
   beforeEach(() => {
-    llmService = new UnifiedLLMService();
-    intentService = new IntentService(llmService);
+    llmService = new LLMService();
+    intentService = new IntentClassificationService(llmService);
     calendarService = new CalendarService(intentService);
     jest.clearAllMocks();
   });
@@ -46,7 +46,7 @@ describe('CalendarService', () => {
     it('should create event from simple voice command', async () => {
       const voiceCommand = "Schedule a meeting tomorrow at 3pm";
       
-      const result = await calendarService.processVoiceCommand(voiceCommand);
+      const result = await calendarService.createEventFromText(voiceCommand);
       
       expect(result).toMatchObject({
         success: true,
@@ -62,7 +62,7 @@ describe('CalendarService', () => {
     it('should handle voice command with duration', async () => {
       const voiceCommand = "Book conference room for 2 hours tomorrow at 2pm";
       
-      const result = await calendarService.processVoiceCommand(voiceCommand);
+      const result = await calendarService.createEventFromText(voiceCommand);
       
       expect(result.event).toMatchObject({
         title: expect.stringContaining('conference room'),
@@ -78,7 +78,7 @@ describe('CalendarService', () => {
     it('should extract location from voice command', async () => {
       const voiceCommand = "Schedule lunch at Cafe Milano tomorrow at noon";
       
-      const result = await calendarService.processVoiceCommand(voiceCommand);
+      const result = await calendarService.createEventFromText(voiceCommand);
       
       expect(result.event).toMatchObject({
         title: expect.stringContaining('lunch'),
@@ -89,7 +89,7 @@ describe('CalendarService', () => {
     it('should handle recurring events', async () => {
       const voiceCommand = "Schedule weekly team standup every Monday at 9am";
       
-      const result = await calendarService.processVoiceCommand(voiceCommand);
+      const result = await calendarService.createEventFromText(voiceCommand);
       
       expect(result.event).toMatchObject({
         title: expect.stringContaining('team standup'),
@@ -100,7 +100,7 @@ describe('CalendarService', () => {
     it('should handle attendees in voice command', async () => {
       const voiceCommand = "Schedule meeting with john@example.com and sarah@example.com tomorrow at 4pm";
       
-      const result = await calendarService.processVoiceCommand(voiceCommand);
+      const result = await calendarService.createEventFromText(voiceCommand);
       
       expect(result.event!.attendees).toEqual(
         expect.arrayContaining(['john@example.com', 'sarah@example.com'])
@@ -127,7 +127,7 @@ describe('CalendarService', () => {
     it('should reject non-calendar intents', async () => {
       const command = "Send email to john about the project";
       
-      const result = await calendarService.processVoiceCommand(command);
+      const result = await calendarService.createEventFromText(command);
       
       expect(result.success).toBe(false);
       expect(result.error).toContain('not a calendar command');
@@ -176,7 +176,7 @@ describe('CalendarService', () => {
       });
 
       const command = "Schedule test meeting tomorrow at 3pm";
-      await calendarService.processVoiceCommand(command);
+      await calendarService.createEventFromText(command);
       
       expect(mockInsert).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -192,7 +192,7 @@ describe('CalendarService', () => {
       });
 
       const command = "Schedule meeting tomorrow";
-      const result = await calendarService.processVoiceCommand(command);
+      const result = await calendarService.createEventFromText(command);
       
       expect(result.success).toBe(false);
       expect(result.error).toContain('Failed to save event');
@@ -202,7 +202,7 @@ describe('CalendarService', () => {
   describe('Response Generation', () => {
     it('should generate friendly confirmation message', async () => {
       const command = "Schedule team lunch tomorrow at noon";
-      const result = await calendarService.processVoiceCommand(command);
+      const result = await calendarService.createEventFromText(command);
       
       expect(result.message).toMatch(/scheduled|created|added/i);
       expect(result.message).toContain('team lunch');
@@ -211,7 +211,7 @@ describe('CalendarService', () => {
 
     it('should provide voice-optimized response', async () => {
       const command = "Schedule meeting tomorrow at 3:30pm";
-      const result = await calendarService.processVoiceCommand(command);
+      const result = await calendarService.createEventFromText(command);
       
       // Voice response should be natural and concise
       expect(result.spokenResponse).toMatch(/I've scheduled your meeting/i);
@@ -222,7 +222,7 @@ describe('CalendarService', () => {
   describe('Edge Cases', () => {
     it('should handle ambiguous dates', async () => {
       const command = "Schedule meeting next Tuesday or Wednesday";
-      const result = await calendarService.processVoiceCommand(command);
+      const result = await calendarService.createEventFromText(command);
       
       expect(result.needsConfirmation).toBe(true);
       expect(result.clarification).toContain('Which day');
@@ -230,7 +230,7 @@ describe('CalendarService', () => {
 
     it('should handle past dates', async () => {
       const command = "Schedule meeting yesterday at 3pm";
-      const result = await calendarService.processVoiceCommand(command);
+      const result = await calendarService.createEventFromText(command);
       
       expect(result.success).toBe(false);
       expect(result.error).toContain('past date');
@@ -238,7 +238,7 @@ describe('CalendarService', () => {
 
     it('should handle very long event titles', async () => {
       const longTitle = "Schedule " + "very ".repeat(50) + "important meeting tomorrow";
-      const result = await calendarService.processVoiceCommand(longTitle);
+      const result = await calendarService.createEventFromText(longTitle);
       
       expect(result.event!.title.length).toBeLessThanOrEqual(255);
     });

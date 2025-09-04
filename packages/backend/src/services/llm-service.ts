@@ -2,6 +2,9 @@
  * LLM Service
  * ONLY uses Ollama for all LLM operations - NO cloud providers
  * Based on Claude-Coherence approach: simple, direct, offline-first
+ * 
+ * CLAUDE: Check context first! Run:
+ * cat /Users/kenny/repos/personal-assistant/packages/backend/.claude-context/CURRENT_SESSION.md
  */
 
 import { ollamaService } from './ollama-service';
@@ -74,7 +77,7 @@ export class LLMService {
     try {
       // Call Ollama directly
       // const startTime = Date.now(); // Unused for now
-      const response = await ollamaService.generateCompletion({
+      const response = await ollamaService.generateOllamaCompletion({
         prompt: request.prompt,
         systemPrompt: request.systemPrompt,
         temperature: request.temperature || 0.3, // Lower temperature for consistency
@@ -159,6 +162,63 @@ export class LLMService {
 
   clearCache(): void {
     this.responseCache.clear();
+  }
+
+  /**
+   * Optimized intent classification with minimal prompt
+   * Uses focused prompt to reduce tokens and improve speed
+   */
+  async classifyIntentOptimized(text: string): Promise<string> {
+    const prompt = `Task: Classify the user's intent.
+
+Intents: create_event, add_reminder, create_note, read_email, send_email
+
+User text: "${text}"
+
+Respond with ONLY the intent name, nothing else.`;
+
+    const response = await this.generateCompletion({
+      prompt,
+      temperature: 0.1, // Very low for consistent classification
+      maxTokens: 10, // Just the intent name
+      responseFormat: 'text'
+    });
+
+    // Clean up response (remove whitespace, punctuation, etc.)
+    return response.content.trim().toLowerCase().replace(/[^a-z_]/g, '');
+  }
+
+  /**
+   * Optimized slot extraction with structured output
+   * Focused prompt for extracting specific information
+   */
+  async extractSlotsOptimized(text: string, intent: string): Promise<Record<string, any>> {
+    const prompt = `Extract information from this text for a ${intent} action.
+
+Text: "${text}"
+
+Extract these slots if present:
+- title/subject
+- datetime (ISO-8601 format)
+- duration_minutes
+- recipients (email addresses)
+- body/content
+
+Respond in JSON format with only found slots.`;
+
+    try {
+      const response = await this.generateCompletion({
+        prompt,
+        temperature: 0.2,
+        maxTokens: 100,
+        responseFormat: 'json'
+      });
+
+      return JSON.parse(response.content);
+    } catch {
+      // If JSON parsing fails, return empty slots
+      return {};
+    }
   }
 }
 

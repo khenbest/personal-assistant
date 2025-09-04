@@ -2,6 +2,15 @@
 
 A comprehensive iOS personal assistant with voice interface, calendar management, and intelligent task automation.
 
+## 🧠 FOR CLAUDE: MANDATORY STARTUP SEQUENCE
+**If you're Claude/AI reading this:**
+1. **FIRST**: Read `.claude/START_HERE.md` 
+2. **PARADIGMS**: Read `documentation/paradigms/prompt.md` (workflow instructions)
+3. **CONTEXT**: Check `.claude-context/CURRENT_SESSION.md`
+4. **UPDATE**: When given a task, immediately run `npm run context task "..."`
+
+**NO EXCEPTIONS. NO BULLSHIT. Follow the paradigms.**
+
 ## 🎯 Features
 
 - **Voice Interface**: WhisperKit for on-device speech recognition, AVSpeechSynthesizer for TTS

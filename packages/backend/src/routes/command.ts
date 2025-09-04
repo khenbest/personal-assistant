@@ -25,14 +25,14 @@ export async function commandRoutes(fastify: FastifyInstance) {
     const { command, userId } = commandSchema.parse(request.body);
     
     try {
-      // Classify intent using IntentService
+      // Classify intent using IntentClassificationService
       const intentResult = await intentService.classifyIntent(command);
       
       // Handle different intents
       switch (intentResult.intent) {
         case 'create_event': {
           // Use CalendarService for event creation
-          const result = await calendarService.processVoiceCommand(command, userId || 'demo-user');
+          const result = await calendarService.createEventFromText(command, userId || 'demo-user');
           
           if (!result.success) {
             return reply.status(400).send(result);

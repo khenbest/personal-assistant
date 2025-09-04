@@ -63,7 +63,7 @@ OLLAMA_RETRY_DELAY_MS=1000          # Initial retry delay
 4. New `getModelsToWarmup()` for selective warm-up
 5. New `callWithRetry()` for production request retries
 
-### LocalLLMService Updates
+### LLMService Updates (formerly LocalLLMService - now consolidated)
 - Made warm-up non-blocking (catches errors)
 - Server continues even if warm-up fails
 - Models will load on first use if warm-up skipped

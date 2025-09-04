@@ -24,6 +24,7 @@ import {
 } from 'expo-speech-recognition';
 import { Ionicons } from '@expo/vector-icons';
 import { processVoiceCommand, handleVoiceCorrection } from '../services/api';
+import calendarService from '../services/calendarService';
 import { v4 as uuidv4 } from 'uuid';
 
 interface VoiceInputProps {
@@ -260,12 +261,33 @@ export function VoiceInputSimplified({ onCommand, showTextInput = false }: Voice
     
     if (confirmed) {
       // User confirmed - execute the action
+      let updatedResult = { ...confirmationData.result, action: 'execute' };
+      
+      // Handle calendar event creation if needed
+      if (confirmationData.result.metadata?.intent === 'create_event') {
+        try {
+          await calendarService.createEventFromIntent(confirmationData.result);
+          const eventDetails = calendarService.formatEventForSpeech({
+            title: confirmationData.result.metadata.entities?.title || 'New Event',
+            startDate: new Date(confirmationData.result.metadata.entities?.datetime_point || Date.now()),
+            endDate: new Date(confirmationData.result.metadata.entities?.datetime_point || Date.now() + 3600000),
+            location: confirmationData.result.metadata.entities?.location,
+          });
+          updatedResult.response = { speak: eventDetails };
+        } catch (error) {
+          console.error('Failed to create calendar event:', error);
+          updatedResult.response = { 
+            speak: "I processed your request, but couldn't create the calendar event. Please check calendar permissions." 
+          };
+        }
+      }
+      
       onCommand({
         type: 'voice',
         text: confirmationData.originalText,
-        result: confirmationData.result,
+        result: updatedResult,
       });
-      await Speech.speak('Great! Executing your command.', { language: 'en-US' });
+      await Speech.speak(updatedResult.response.speak || 'Great! Executing your command.', { language: 'en-US' });
     } else {
       // User rejected - could offer correction
       await Speech.speak('Ok, cancelled. Please try again.', { language: 'en-US' });

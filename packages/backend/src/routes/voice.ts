@@ -56,7 +56,7 @@ export async function voiceRoutes(fastify: FastifyInstance) {
       }
 
       // Process through MVP processor with designed thresholds (0.81/0.91)
-      const result = await voiceProcessor.processVoiceCommand(
+      const result = await voiceProcessor.processVoiceIntent(
         text,
         sessionId,
         userId || 'demo-user'
@@ -133,7 +133,7 @@ export async function voiceRoutes(fastify: FastifyInstance) {
       let result: any;
       switch (intentResult.intent) {
         case 'create_event':
-          result = await calendarService.processVoiceCommand(text, userId || 'demo-user');
+          result = await calendarService.createEventFromText(text, userId || 'demo-user');
           break;
           
         case 'add_reminder':

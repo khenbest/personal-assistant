@@ -1,10 +1,10 @@
 /**
  * Calendar Service
  * Handles calendar event creation from voice commands
- * Integrates with IntentService and Supabase
+ * Integrates with IntentClassificationService and Supabase
  */
 
-import { IntentService } from ./intent-classification-service.;
+import { IntentClassificationService } from './intent-classification-service';
 import { SlotExtractionService, ExtractedSlots } from './slot-extraction-service';
 import { supabase } from '../db/supabase';
 import * as chrono from 'chrono-node';
@@ -45,9 +45,9 @@ export class CalendarService {
   }
 
   /**
-   * Process voice command to create calendar event
+   * Create calendar event from text command
    */
-  async processVoiceCommand(command: string, userId: string = 'demo-user'): Promise<ProcessResult> {
+  async createEventFromText(command: string, userId: string = 'demo-user'): Promise<ProcessResult> {
     try {
       // Step 1: Classify intent
       const intentResult = await this.intentService.classifyIntent(command);

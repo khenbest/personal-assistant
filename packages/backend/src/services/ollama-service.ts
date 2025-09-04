@@ -50,9 +50,9 @@ export class OllamaService {
   }
 
   /**
-   * Generate completion with automatic fallback and retry logic
+   * Generate completion from local Ollama models with fallback
    */
-  async generateCompletion(request: OllamaRequest): Promise<OllamaResponse> {
+  async generateOllamaCompletion(request: OllamaRequest): Promise<OllamaResponse> {
     // Try primary model first (Qwen) with retry
     if (this.modelAvailability.get(this.primaryModel)) {
       try {

@@ -224,12 +224,12 @@ export class AccuracyTrackingService {
 
       // Calculate metrics
       const total = data.length;
-      const correct = data.filter(d => d.expected_intent === d.actual_intent).length;
+      const correct = data.filter((d: any) => d.expected_intent === d.actual_intent).length;
       const accuracy = total > 0 ? (correct / total) * 100 : 0;
 
       // Group by intent
       const byIntent: { [key: string]: { total: number; correct: number } } = {};
-      data.forEach(log => {
+      data.forEach((log: any) => {
         const intent = log.expected_intent;
         if (!byIntent[intent]) {
           byIntent[intent] = { total: 0, correct: 0 };
@@ -243,7 +243,10 @@ export class AccuracyTrackingService {
       // Calculate per-intent accuracy
       const intentAccuracy: { [key: string]: number } = {};
       Object.keys(byIntent).forEach(intent => {
-        intentAccuracy[intent] = (byIntent[intent].correct / byIntent[intent].total) * 100;
+        const intentData = byIntent[intent];
+        if (intentData) {
+          intentAccuracy[intent] = (intentData.correct / intentData.total) * 100;
+        }
       });
 
       return {

@@ -95,7 +95,7 @@ export async function correctionRoutes(fastify: FastifyInstance) {
   });
   
   // Get recent failures for debugging
-  fastify.get('/corrections/failures', async (request, reply) => {
+  fastify.get('/corrections/failures', async (_, reply) => {
     try {
       const failures = await intentService.getRecentFailures(10);
       

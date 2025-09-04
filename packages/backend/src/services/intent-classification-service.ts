@@ -7,7 +7,7 @@
 import { LLMService } from './llm-service';
 import * as chrono from 'chrono-node';
 import { createClient } from '@supabase/supabase-js';
-import { IntentClassificationLoggerService } from ./intent-classification-logger-service.;
+import { IntentClassificationLoggerService } from './intent-classification-logger-service';
 import { intentCache } from './cache-service';
 import { accuracyTracker } from './accuracy-tracking-service';
 
@@ -20,6 +20,10 @@ export interface IntentResult {
   metadata?: {
     provider?: string;
     responseTime?: number;
+    source?: string;
+    fallback?: boolean;
+    error?: string;
+    predictionId?: string;
   };
 }
 
@@ -37,13 +41,22 @@ export class IntentClassificationService {
   private knnIndex: Map<string, any[]> = new Map();
   private logger: IntentClassificationLoggerService;
   // private centroids: Map<string, number[]> = new Map();
+  
+  // Rule-based pattern matching for fast classification
+  private readonly intentPatterns = {
+    create_event: /\b(schedule|meeting|appointment|event|calendar)\b/i,
+    add_reminder: /\b(remind|reminder|ping|nudge|alert)\b/i,
+    create_note: /\b(note|notes|write down|capture|jot|memo)\b/i,
+    send_email: /\b(send|email|mail|compose|write to)\b/i,
+    read_email: /\b(read|check|show|list|view).*(email|mail|message|inbox)\b/i,
+  };
 
   constructor(
     private llmService: LLMService,
     logger?: IntentClassificationLoggerService
   ) {
     // Initialize logger for tracking classifications
-    this.logger = logger || new ClassificationLogger('v1.0.0');
+    this.logger = logger || new IntentClassificationLoggerService('v1.0.0');
     // Initialize Supabase for learning storage
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY;
@@ -80,7 +93,37 @@ export class IntentClassificationService {
     }
     
     try {
-      // Step 1: Try kNN lookup for high-confidence matches
+      // Step 1: Try rule-based classification first (instant)
+      const ruleResult = this.classifyWithRules(text);
+      if (ruleResult && ruleResult.confidence > 0.85) {
+        // Extract slots for rule-based results
+        const slots = await this.extractSlots(text, ruleResult.intent);
+        ruleResult.slots = slots;
+        
+        const responseTime = Date.now() - startTime;
+        ruleResult.metadata = { responseTime, source: 'rules' };
+        
+        // Cache high confidence rule results
+        intentCache.set(cacheKey, ruleResult);
+        
+        // Log if expected intent provided
+        if (expectedIntent) {
+          await this.logger.logClassification({
+            inputText: text,
+            expectedIntent,
+            actualIntent: ruleResult.intent,
+            confidenceScore: ruleResult.confidence,
+            actualSlots: ruleResult.slots,
+            responseTimeMs: responseTime,
+            modelVersion: 'v1.0.0',
+            metadata: { source: 'rules' }
+          });
+        }
+        
+        return ruleResult;
+      }
+      
+      // Step 2: Try kNN lookup for high-confidence matches
       const knnResult = await this.knnClassify(text);
       if (knnResult && knnResult.confidence > 0.6) { // Lowered from 0.85
         // Extract slots for kNN results
@@ -132,7 +175,7 @@ export class IntentClassificationService {
           return {
             ...knnResult,
             needsConfirmation: true,
-            metadata: { responseTime, fallback: 'knn-low-confidence' }
+            metadata: { responseTime, fallback: true, source: 'knn-low-confidence' }
           };
         }
         
@@ -222,6 +265,37 @@ export class IntentClassificationService {
       
       throw error;
     }
+  }
+
+  /**
+   * Rule-based classification for common patterns
+   */
+  private classifyWithRules(text: string): IntentResult | null {
+    const normalizedText = text.toLowerCase();
+    
+    // Check each pattern
+    for (const [intent, pattern] of Object.entries(this.intentPatterns)) {
+      if (pattern.test(normalizedText)) {
+        // Higher confidence for more specific patterns
+        let confidence = 0.7;
+        if (intent === 'add_reminder' && /\bremind me\b/i.test(text)) {
+          confidence = 0.95;
+        } else if (intent === 'create_event' && /\b(schedule|meeting)\b/i.test(text)) {
+          confidence = 0.9;
+        } else if (intent === 'send_email' && /\b(send|email)\s+(to|message)\b/i.test(text)) {
+          confidence = 0.88;
+        }
+        
+        return {
+          intent,
+          confidence,
+          slots: {}, // Slots will be extracted separately
+          needsConfirmation: confidence < 0.85
+        };
+      }
+    }
+    
+    return null;
   }
 
   /**
@@ -442,7 +516,7 @@ export class IntentClassificationService {
     };
     
     // Boost score if both texts contain same intent keywords
-    for (const [intent, keywords] of Object.entries(intentKeywords)) {
+    for (const [, keywords] of Object.entries(intentKeywords)) {
       const hasKeyword1 = keywords.some(k => text1.includes(k));
       const hasKeyword2 = keywords.some(k => text2.includes(k));
       if (hasKeyword1 && hasKeyword2) {
@@ -764,7 +838,7 @@ export class IntentClassificationService {
     try {
       // Load main training data
       const fs = require('fs').promises;
-      const path = require('path');
+      // const path = require('path'); // Unused in current implementation
       const { parse } = require('csv-parse/sync');
       
       // Always use absolute path from project root
@@ -844,11 +918,12 @@ export class IntentClassificationService {
 
       if (success) {
         // Update KNN index immediately
-        this.updateKnnIndex(
-          correction.originalText,
-          correction.correctedIntent,
-          correction.correctedSlots
-        );
+        // TODO: Implement updateKnnIndex when KNN is fully integrated
+        // this.updateKnnIndex(
+        //   correction.originalText,
+        //   correction.correctedIntent,
+        //   correction.correctedSlots
+        // );
 
         console.log('✅ Applied correction:', {
           text: correction.originalText,

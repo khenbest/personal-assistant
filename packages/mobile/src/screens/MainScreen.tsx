@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { processVoiceCommand } from '../services/api';
 import { VoiceInputSimplified } from '../components/VoiceInputSimplified';
+import calendarService from '../services/calendarService';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Message {
@@ -92,7 +93,7 @@ export function MainScreen() {
     }
   };
 
-  const handleVoiceCommand = (result: any) => {
+  const handleVoiceCommand = async (result: any) => {
     if (result.type === 'voice' && result.result?.success) {
       // Add the voice command to messages
       const userMessage: Message = {
@@ -102,10 +103,29 @@ export function MainScreen() {
         timestamp: new Date(),
       };
 
+      let assistantContent = result.result.response?.speak || 'Command processed.';
+      
+      // Handle calendar event creation if intent is create_event
+      if (result.result.metadata?.intent === 'create_event' && result.result.action === 'execute') {
+        try {
+          const eventId = await calendarService.createEventFromIntent(result.result);
+          const eventDetails = calendarService.formatEventForSpeech({
+            title: result.result.metadata.entities?.title || 'New Event',
+            startDate: new Date(result.result.metadata.entities?.datetime_point || Date.now()),
+            endDate: new Date(result.result.metadata.entities?.datetime_point || Date.now() + 3600000),
+            location: result.result.metadata.entities?.location,
+          });
+          assistantContent = eventDetails;
+        } catch (error) {
+          console.error('Failed to create calendar event:', error);
+          assistantContent = "I processed your request, but couldn't create the calendar event. Please check calendar permissions.";
+        }
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: result.result.response?.speak || 'Command processed.',
+        content: assistantContent,
         timestamp: new Date(),
       };
 

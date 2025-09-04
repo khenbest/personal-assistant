@@ -4,7 +4,7 @@
  * Confidence gates: <0.81 confirm, ≥0.91 auto-execute
  */
 
-import { IntentService, IntentResult } from ./intent-classification-service.;
+import { IntentClassificationService, IntentResult } from './intent-classification-service';
 import { CalendarService } from './calendar-service';
 import { reminderService } from './reminder-service';
 import { noteService } from './note-service';
@@ -63,9 +63,9 @@ export class VoiceService {
   }
 
   /**
-   * Main processing method - MVP approach per OVERVIEW.md
+   * Process voice intent with confidence-based execution
    */
-  async processVoiceCommand(
+  async processVoiceIntent(
     text: string,
     sessionId: string,
     userId: string
@@ -75,23 +75,19 @@ export class VoiceService {
       const session = this.getOrCreateSession(sessionId, userId);
       this.addToSession(session, 'user', text);
       
-      // 2. Use existing IntentService (rules + kNN + TF-IDF)
+      // 2. Use existing IntentClassificationService (rules + kNN + TF-IDF)
       const intentResult = await this.intentService.classifyIntent(text);
       
       // 3. Apply MVP confidence gates from OVERVIEW.md
       let action: VoiceResponse['action'];
-      let requiresConfirmation = false;
       
       if (intentResult.confidence < this.CONFIRM_THRESHOLD) {
         action = 'confirm';
-        requiresConfirmation = true;
       } else if (intentResult.confidence >= this.AUTO_EXECUTE_THRESHOLD) {
         action = 'execute';
-        requiresConfirmation = false;
       } else {
         // Between 0.81 and 0.91 - still confirm to be safe
         action = 'confirm';
-        requiresConfirmation = true;
       }
       
       // 4. Generate appropriate response
@@ -200,11 +196,11 @@ export class VoiceService {
     originalText: string,
     userId: string
   ): Promise<any> {
-    const { intent, slots } = intentResult;
+    const { intent /*, slots*/ } = intentResult; // slots unused - may be used in future enhancements
 
     switch (intent) {
       case 'create_event':
-        return await this.calendarService.processVoiceCommand(originalText, userId);
+        return await this.calendarService.createEventFromText(originalText, userId);
       
       case 'add_reminder':
         return await reminderService.processReminderCommand(originalText, userId);

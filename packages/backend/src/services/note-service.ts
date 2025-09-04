@@ -1,10 +1,13 @@
 /**
  * Note Service
  * Handles creation and management of notes
+ * 
+ * CLAUDE: Check context! npm run context:show
  */
 
-import { SlotExtractionService } from './slot-extraction-service';
+// import { SlotExtractionService } from './slot-extraction-service'; // TODO: Implement when needed
 import { createClient } from '@supabase/supabase-js';
+// import { LLMService } from './llm-service'; // TODO: Implement when needed
 
 export interface Note {
   id?: string;
@@ -25,10 +28,11 @@ export interface NoteResult {
 
 export class NoteService {
   private supabase;
-  private slotExtractor: SlotExtractionService;
 
   constructor() {
-    this.slotExtractor = new SlotExtractionService();
+    // TODO: Implement slot extraction for notes when needed
+    // const llmService = new LLMService();
+    // const slotExtractor = new SlotExtractionService(llmService);
     
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -127,7 +131,7 @@ export class NoteService {
     // Extract tags if specified
     const tags: string[] = [];
     const tagMatch = content.match(/(?:tag(?:ged)?|with tags?)\s+(.+?)(?:\s+and|\s*$)/i);
-    if (tagMatch) {
+    if (tagMatch && tagMatch[1]) {
       const tagString = tagMatch[1];
       tags.push(...tagString.split(/[,\s]+/).filter(t => t.length > 0));
       content = content.replace(tagMatch[0], '').trim();

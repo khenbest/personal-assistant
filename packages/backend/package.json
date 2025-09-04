@@ -22,7 +22,13 @@
     "db:migrate": "cd ../.. && supabase db push",
     "db:reset": "cd ../.. && supabase db reset",
     "db:manual": "bash ../../setup-db.sh",
-    "setup": "npm run db:check"
+    "setup": "npm run db:check",
+    "context": "tsx src/scripts/manage-context.ts",
+    "context:show": "tsx src/scripts/manage-context.ts show",
+    "context:clear": "tsx src/scripts/manage-context.ts clear",
+    "context:auto": "tsx src/scripts/auto-context.ts capture",
+    "context:instructions": "tsx src/scripts/auto-context.ts instructions",
+    "context:startup": "tsx src/scripts/auto-context.ts startup"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",

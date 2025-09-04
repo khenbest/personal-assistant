@@ -4,9 +4,9 @@
  * Tracks ACTUAL vs EXPECTED for training improvement
  */
 
-import { IntentService } from '../services/intent-service';
+import { IntentClassificationService } from '../services/intent-classification-service';
 import { LLMService } from '../services/llm-service';
-import { IntentClassificationLoggerService } from '../services/classification-logger';
+import { IntentClassificationLoggerService } from '../services/intent-classification-logger-service';
 import { TestDataGenerator, TestCase } from './generate-test-data';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -21,8 +21,8 @@ class IntentTestRunner {
 
   constructor() {
     this.llmService = new LLMService();
-    this.intentService = new IntentService(this.llmService);
-    this.logger = new ClassificationLogger('v1.0.0');
+    this.intentService = new IntentClassificationService(this.llmService);
+    this.logger = new IntentClassificationLoggerService('v1.0.0');
   }
 
   /**

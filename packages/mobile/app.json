@@ -7,6 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -18,6 +19,7 @@
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access the microphone for voice commands",
         "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to recognize your speech",
+        "NSCalendarsUsageDescription": "Allow $(PRODUCT_NAME) to create and manage calendar events from voice commands",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -28,7 +30,9 @@
       },
       "permissions": [
         "RECORD_AUDIO",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR"
       ],
       "package": "com.khenbest.eidolon"
     },

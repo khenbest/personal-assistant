@@ -24,7 +24,7 @@ import { ollamaService } from '../services/ollama-service';
     console.log('\n✅ OllamaService is healthy! Testing generation...');
     
     try {
-      const response = await ollamaService.generateCompletion({
+      const response = await ollamaService.generateOllamaCompletion({
         prompt: 'Say "hello" and nothing else.',
         maxTokens: 10,
         temperature: 0.1

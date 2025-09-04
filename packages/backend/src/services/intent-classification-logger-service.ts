@@ -466,4 +466,4 @@ export class IntentClassificationLoggerService {
   }
 }
 
-export default ClassificationLogger;
+export default IntentClassificationLoggerService;

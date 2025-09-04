@@ -5,6 +5,7 @@
 
 import { SlotExtractionService } from './slot-extraction-service';
 import { createClient } from '@supabase/supabase-js';
+import { LLMService } from './llm-service';
 
 export interface Reminder {
   id?: string;
@@ -28,7 +29,8 @@ export class ReminderService {
   private slotExtractor: SlotExtractionService;
 
   constructor() {
-    this.slotExtractor = new SlotExtractionService();
+    const llmService = new LLMService();
+    this.slotExtractor = new SlotExtractionService(llmService);
     
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;

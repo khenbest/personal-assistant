@@ -38,7 +38,7 @@ Text: "remind me to call john tomorrow"
 Respond with just the intent name.`;
 
   try {
-    const response = await ollamaService.generateCompletion({
+    const response = await ollamaService.generateOllamaCompletion({
       prompt: testPrompt,
       temperature: 0.1,
       maxTokens: 20

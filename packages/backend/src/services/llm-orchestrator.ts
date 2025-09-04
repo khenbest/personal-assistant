@@ -5,7 +5,7 @@
  */
 
 import { LLMService } from './llm-service';
-import { IntentService } from ./intent-classification-service.;
+import { IntentClassificationService } from './intent-classification-service';
 import { CalendarService } from './calendar-service';
 import { reminderService } from './reminder-service';
 import { noteService } from './note-service';
@@ -81,7 +81,7 @@ export class LLMOrchestrator {
 
   constructor() {
     this.llmService = new LLMService();
-    this.intentService = new IntentService(this.llmService);
+    this.intentService = new IntentClassificationService(this.llmService);
     this.calendarService = new CalendarService(this.intentService);
     
     // Initialize Supabase for conversation storage
@@ -94,9 +94,9 @@ export class LLMOrchestrator {
   }
 
   /**
-   * Main processing method - orchestrates the entire conversation
+   * Route voice intent to appropriate service with conversation context
    */
-  async processVoiceCommand(
+  async routeVoiceIntent(
     text: string,
     sessionId: string,
     userId: string
@@ -331,12 +331,12 @@ export class LLMOrchestrator {
    * Execute the actual command
    */
   private async executeCommand(understanding: any): Promise<any> {
-    const { intent, entities, originalText } = understanding;
+    const { intent, /* entities, */ originalText } = understanding;
     const userId = understanding.context?.userId || 'demo-user';
 
     switch (intent) {
       case 'create_event':
-        return await this.calendarService.processVoiceCommand(originalText, userId);
+        return await this.calendarService.createEventFromText(originalText, userId);
       
       case 'add_reminder':
         return await reminderService.processReminderCommand(originalText, userId);

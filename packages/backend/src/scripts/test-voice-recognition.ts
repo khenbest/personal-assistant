@@ -4,7 +4,7 @@
  * Tests the complete voice → intent → calendar flow
  */
 
-import { IntentService } from '../services/intent-service';
+import { IntentClassificationService } from '../services/intent-classification-service';
 import { CalendarService } from '../services/calendar-service';
 import { LLMService } from '../services/llm-service';
 import chalk from 'chalk';
@@ -13,7 +13,7 @@ async function testVoiceCommands() {
   console.log(chalk.blue('🎤 Testing Voice Recognition Pipeline\n'));
   
   const llmService = new LLMService();
-  const intentService = new IntentService(llmService);
+  const intentService = new IntentClassificationService(llmService);
   const calendarService = new CalendarService(intentService);
   
   // Test commands that would come from voice recognition
@@ -38,7 +38,7 @@ async function testVoiceCommands() {
       
       // Test calendar processing if it's a calendar command
       if (intentResult.intent === 'create_event') {
-        const calendarResult = await calendarService.processVoiceCommand(command);
+        const calendarResult = await calendarService.createEventFromText(command);
         
         if (calendarResult.success) {
           console.log(chalk.green(`✅ Calendar Event Created:`));

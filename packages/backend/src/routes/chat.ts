@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import { llmService } from '../services/llm-service';
+// import { llmService } from '../services/llm-service'; // TODO: Migrate to IntentClassificationService
 import { db } from '../db/supabase';
 
 interface ChatRequest {
@@ -8,13 +8,13 @@ interface ChatRequest {
   conversationId?: string;
 }
 
-interface ChatResponse {
-  response: string;
-  intent?: string;
-  entities?: any;
-  event?: any;
-  task?: any;
-}
+// interface ChatResponse { // TODO: Use when chat is properly migrated
+//   response: string;
+//   intent?: string;
+//   entities?: any;
+//   event?: any;
+//   task?: any;
+// }
 
 const chatRoutes: FastifyPluginAsync = async (fastify) => {
   // Health check for chat service
@@ -31,20 +31,18 @@ const chatRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     try {
-      // Parse the command to understand intent
-      const commandResult = await llmService.parseCommand(message);
+      // TODO: Migrate to use IntentClassificationService instead
+      // The old parseCommand and generateResponse methods no longer exist
+      // For now, return a placeholder response
       
-      // Generate appropriate response based on intent
-      let context = `User intent: ${commandResult.intent}`;
-      if (commandResult.entities) {
-        context += `, Entities: ${JSON.stringify(commandResult.entities)}`;
-      }
-
-      const response = await llmService.generateResponse(
-        context,
-        message,
-        'friendly'
-      );
+      const response = {
+        message: "Chat functionality is being migrated to the new intent classification system."
+      };
+      
+      const commandResult = {
+        intent: 'unknown',
+        entities: {} as any // TODO: Define proper entity types when migrating
+      };
 
       // Handle specific intents
       let event = null;
@@ -97,12 +95,12 @@ const chatRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       return {
-        response,
+        response: response.message,
         intent: commandResult.intent,
         entities: commandResult.entities,
         event,
         task,
-      } as ChatResponse;
+      };
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ 
