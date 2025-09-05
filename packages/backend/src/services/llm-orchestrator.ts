@@ -4,11 +4,13 @@
  * No hard-coded thresholds - all intelligence is LLM-driven
  */
 
+import { Logger } from 'pino';
 import { LLMService } from './llm-service';
 import { IntentClassificationService } from './intent-classification-service';
 import { CalendarService } from './calendar-service';
-import { reminderService } from './reminder-service';
-import { noteService } from './note-service';
+import { ReminderService } from './reminder-service';
+import { NoteService } from './note-service';
+import { EnhancedActionExecutor } from './enhanced-action-executor';
 import { createClient } from '@supabase/supabase-js';
 
 export interface ConversationContext {
@@ -73,16 +75,18 @@ export interface VoiceResponse {
 }
 
 export class LLMOrchestrator {
-  private llmService: LLMService;
-  private intentService: IntentClassificationService;
-  private calendarService: CalendarService;
   private supabase: any;
   private conversationStore: Map<string, ConversationContext> = new Map();
 
-  constructor() {
-    this.llmService = new LLMService();
-    this.intentService = new IntentClassificationService(this.llmService);
-    this.calendarService = new CalendarService(this.intentService);
+  constructor(
+    private llmService: LLMService,
+    private intentService: IntentClassificationService,
+    private actionExecutor: EnhancedActionExecutor,
+    private calendarService: CalendarService,
+    private reminderService: ReminderService,
+    private noteService: NoteService,
+    private logger: Logger
+  ) {
     
     // Initialize Supabase for conversation storage
     const supabaseUrl = process.env.SUPABASE_URL;
@@ -91,6 +95,54 @@ export class LLMOrchestrator {
     if (supabaseUrl && supabaseKey) {
       this.supabase = createClient(supabaseUrl, supabaseKey);
     }
+  }
+
+  /**
+   * Unified request processing - single entry point for all requests
+   */
+  async processUnifiedRequest(
+    text: string,
+    sessionId: string,
+    userId: string = 'default',
+    context?: Record<string, any>
+  ): Promise<any> {
+    // For voice requests, use the full conversation flow
+    if (context?.isVoice) {
+      return this.routeVoiceIntent(text, sessionId, userId);
+    }
+
+    // For text requests, use simplified flow
+    const conversationContext = await this.getOrCreateContext(sessionId, userId);
+    
+    // Add to history
+    this.addToHistory(conversationContext, 'user', text);
+    
+    // Classify intent
+    const classification = await this.intentService.classifyIntent(text);
+    
+    // Execute with enhanced executor
+    const result = await this.actionExecutor.executeFromIntent(
+      classification,
+      text,
+      {
+        sessionId,
+        userId,
+        deviceInfo: context?.deviceInfo,
+        preferences: context?.preferences
+      }
+    );
+    
+    // Add response to history
+    this.addToHistory(conversationContext, 'assistant', result.naturalResponse, {
+      intent: classification.intent,
+      actionId: result.actionId,
+      success: result.success
+    });
+    
+    // Save context
+    await this.saveContext(conversationContext);
+    
+    return result;
   }
 
   /**
@@ -328,37 +380,42 @@ export class LLMOrchestrator {
   }
 
   /**
-   * Execute the actual command
+   * Execute the actual command using Enhanced Action Executor
    */
   private async executeCommand(understanding: any): Promise<any> {
-    const { intent, /* entities, */ originalText } = understanding;
-    const userId = understanding.context?.userId || 'demo-user';
+    const { intent, entities, originalText, context } = understanding;
+    const userId = context?.userId || 'demo-user';
+    const sessionId = context?.sessionId || 'default';
 
-    switch (intent) {
-      case 'create_event':
-        return await this.calendarService.createEventFromText(originalText, userId);
-      
-      case 'add_reminder':
-        return await reminderService.processReminderCommand(originalText, userId);
-      
-      case 'create_note':
-        return await noteService.processNoteCommand(originalText, userId);
-      
-      case 'send_email':
-      case 'read_email':
-        return {
-          success: false,
-          spokenResponse: "I'll be able to handle emails for you soon.",
-          displayText: 'Email functionality coming soon'
-        };
-      
-      default:
-        return {
-          success: false,
-          spokenResponse: "I couldn't process that command. Please try again.",
-          displayText: 'Unknown command'
-        };
-    }
+    // Create a proper IntentClassification object for the executor
+    const classification = {
+      intent: intent,
+      confidence: understanding.confidence || 0.8,
+      slots: entities || {}
+    };
+
+    // Use the enhanced action executor for iOS action support
+    const result = await this.actionExecutor.executeFromIntent(
+      classification,
+      originalText,
+      {
+        sessionId,
+        userId,
+        deviceInfo: context?.deviceInfo,
+        preferences: context?.preferences
+      }
+    );
+
+    // Format response for voice output
+    return {
+      success: result.success,
+      spokenResponse: result.naturalResponse,
+      displayText: result.naturalResponse,
+      data: result.result?.data,
+      suggestedActions: result.suggestedActions,
+      actionId: result.actionId,
+      domain: result.domain
+    };
   }
 
   /**
