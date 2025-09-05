@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "name": "Eidolon",
+    "slug": "eidolon",
+    "owner": "khenbest",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.khenbest.eidolon",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access the microphone for voice commands",
+        "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to recognize your speech",
+        "NSCalendarsUsageDescription": "Allow $(PRODUCT_NAME) to create and manage calendar events from voice commands",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR"
+      ],
+      "package": "com.khenbest.eidolon"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "name": "Eidolon",
+      "shortName": "Eidolon",
+      "lang": "en-US",
+      "scope": "/",
+      "startUrl": "/",
+      "display": "standalone",
+      "themeColor": "#007AFF",
+      "backgroundColor": "#ffffff",
+      "preferRelatedApplications": false
+    },
+    "plugins": [
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access the microphone for voice commands",
+          "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to recognize your speech"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "fe89bec6-7708-4744-b67c-3737ff45f90c"
+      }
+    }
+  }
+}

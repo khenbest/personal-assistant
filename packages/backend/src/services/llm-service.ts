@@ -171,7 +171,16 @@ export class LLMService {
   async classifyIntentOptimized(text: string): Promise<string> {
     const prompt = `Task: Classify the user's intent.
 
-Intents: create_event, add_reminder, create_note, read_email, send_email
+Intents:
+- create_event (schedule meetings, appointments, calendar events)
+- query_events (check calendar, what's scheduled, am I free)
+- cancel_event (cancel, remove, delete events)
+- add_reminder (remind me, set reminder, ping me)
+- query_reminders (what reminders, list reminders)
+- create_note (take note, write down, jot down)
+- query_notes (find notes, search notes, what did I write)
+- send_email (send email, compose, write to)
+- read_email (check email, read messages)
 
 User text: "${text}"
 
@@ -193,18 +202,21 @@ Respond with ONLY the intent name, nothing else.`;
    * Focused prompt for extracting specific information
    */
   async extractSlotsOptimized(text: string, intent: string): Promise<Record<string, any>> {
-    const prompt = `Extract information from this text for a ${intent} action.
+    const prompt = `Extract key information from this text for a ${intent} action.
 
 Text: "${text}"
 
-Extract these slots if present:
-- title/subject
-- datetime (ISO-8601 format)
-- duration_minutes
-- recipients (email addresses)
-- body/content
+Extract ALL relevant information as JSON:
+- For events: title, datetime, duration, attendees, location
+- For reminders: task, datetime
+- For notes: title, content
+- For emails: recipients, subject, body
+- Extract people names, times (convert to ISO-8601), durations in minutes
 
-Respond in JSON format with only found slots.`;
+Example output format:
+{"title": "Meeting with John", "datetime": "2024-03-15T14:00:00", "attendees": ["John"], "duration_minutes": 60}
+
+Respond with ONLY valid JSON containing the extracted slots.`;
 
     try {
       const response = await this.generateCompletion({

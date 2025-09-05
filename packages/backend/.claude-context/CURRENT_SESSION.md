@@ -1,8 +1,8 @@
 # Current Session Context
 
-**Session ID**: 1756963958530_39sfqxu11  
-**Started**: 2025-09-04T05:32:34.273Z  
-**Last Updated**: 2025-09-04T05:32:34.273Z
+**Session ID**: 1757020397706_53eqyq4bm  
+**Started**: 2025-09-04T21:13:09.643Z  
+**Last Updated**: 2025-09-04T21:13:09.643Z
 
 ## 🎯 Current Task
 *Auto-detected from system state*
@@ -11,20 +11,20 @@
 - Start iOS app: cd packages/mobile && npx expo run:ios
 
 ## ✅ Recent Decisions
+- 380e4e5 Context:Startup
 - acc0bc4 Intent v2 + Naming Convention Standardization + PARADIGMS
 - 39eb31c Basic Intent v1
 - 9e8503f Simple LLM + Cleanup
 - a7f324d Voice + Calendar 0.1
-- 656831b NLP Initial Plan
 
 ## 📋 Pending Actions
 - [ ] Start iOS app: cd packages/mobile && npx expo run:ios
 
 ## 💡 Key Facts & Context
 ### System Status
-- **Backend API**: unhealthy (http://localhost:3000)
+- **Backend API**: healthy (http://localhost:3000)
 - **Ollama**: healthy (http://localhost:11434)
-- **Expo Dev Server**: unhealthy (http://localhost:8081)
+- **Expo Dev Server**: healthy (http://localhost:8081)
 
 ### Build Status
 - **Platform**: ios
@@ -33,9 +33,17 @@
 
 
 ### Active Processes
+- **port-3000**: node dist/server.js (port 3000)
+- **port-8081**: node /Users/kenny/repos/personal-assistant/node_modules/.bin/expo start (port 8081)
 - **port-11434**: /usr/local/opt/ollama/bin/ollama serve (port 11434)
-- **tsx-54217**: node /Users/kenny/repos/personal-assistant/node_modules/.bin/tsx watch src/server.ts 
-- **ollama-45658**: /usr/local/opt/ollama/bin/ollama serve 
+- **expo-474**: /usr/libexec/wallpaperexportd 
+- **expo-19933**: /bin/zsh -c -l source /Users/kenny/.claude/shell-snapshots/snapshot-zsh-1757018181554-bb2wyg.sh && eval 'cd ../mobile && npx expo start' \< /dev/null && pwd -P >| /var/folders/lb/kyy_1mkj103ctgcdvswzg4qm0000gn/T/claude-bfed-cwd 
+- **expo-19939**: npm exec expo start 
+- **expo-19970**: node /Users/kenny/repos/personal-assistant/node_modules/.bin/expo start 
+- **expo-23382**: /bin/zsh -c -l source /Users/kenny/.claude/shell-snapshots/snapshot-zsh-1757018181554-bb2wyg.sh && eval 'cd /Users/kenny/repos/personal-assistant/packages/mobile && npx expo run:ios' \< /dev/null && pwd -P >| /var/folders/lb/kyy_1mkj103ctgcdvswzg4qm0000gn/T/claude-e883-cwd 
+- **expo-23388**: npm exec expo run:ios 
+- **expo-23440**: node /Users/kenny/repos/personal-assistant/node_modules/.bin/expo run:ios 
+- **ollama-2701**: /usr/local/opt/ollama/bin/ollama serve 
 
 ### Known Issues to Avoid
 
@@ -59,11 +67,11 @@
 - **scribe**: Professional writer, documentation specialist (available)
 
 ### MCP Servers (5 available)
-- **Context7**: available (~29ms) - Library documentation, Framework patterns, API references, Best practices
-- **Sequential**: available (~46ms) - Multi-step reasoning, Complex analysis, Systematic debugging, Problem decomposition
-- **Magic**: available (~11ms) - UI component generation, Design system integration, Modern frameworks, Responsive design
-- **Playwright**: available (~85ms) - E2E testing, Browser automation, Performance monitoring, Visual testing
-- **IDE**: available (~10ms) - Code diagnostics, Jupyter execution, VS Code integration
+- **Context7**: available (~114ms) - Library documentation, Framework patterns, API references, Best practices
+- **Sequential**: available (~95ms) - Multi-step reasoning, Complex analysis, Systematic debugging, Problem decomposition
+- **Magic**: available (~92ms) - UI component generation, Design system integration, Modern frameworks, Responsive design
+- **Playwright**: available (~33ms) - E2E testing, Browser automation, Performance monitoring, Visual testing
+- **IDE**: available (~16ms) - Code diagnostics, Jupyter execution, VS Code integration
 
 ### Available Commands (12 total)
 **Wave-Enabled**: /analyze, /build, /implement, /improve, /design, /task
@@ -76,7 +84,7 @@
 - **Version**: 2.0-AutoContext
 - **Files Tracked**: 4
 - **Completeness**: 100%
-- **Last Update**: 9/3/2025, 11:21:48 PM
+- **Last Update**: 9/4/2025, 2:47:36 PM
 
 ## 📝 Quick Reference
 - **Project Root**: /Users/kenny/repos/personal-assistant/packages/backend

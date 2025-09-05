@@ -8,28 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		31CCEA1B352A897B99D786BA /* libPods-Eidolon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 35E253C5F512F51CD9DCE27C /* libPods-Eidolon.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		94D227A9404BDFC124A51426 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EEE5EBF74204B4ACEF71D1E /* ExpoModulesProvider.swift */; };
-		A55921086495E035BF55366C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 25CD7E7EC6359021F0D2C931 /* PrivacyInfo.xcprivacy */; };
+		8471A08021E9B5CFA6E7EFE3 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CA4FA5CAF29284C46D9AAA0 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		F3DCC340DAE15420D3DDBF5E /* libPods-Eidolon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E13D97BA4429F6516EB017C /* libPods-Eidolon.a */; };
+		F3ED2BE11CCA14B7D38C8E5B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E6A162FCE42FAA1E06BD33CD /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0E13D97BA4429F6516EB017C /* libPods-Eidolon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Eidolon.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* Eidolon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Eidolon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Eidolon/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Eidolon/Info.plist; sourceTree = "<group>"; };
-		1EEE5EBF74204B4ACEF71D1E /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Eidolon/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		25CD7E7EC6359021F0D2C931 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Eidolon/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		35E253C5F512F51CD9DCE27C /* libPods-Eidolon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Eidolon.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6210D621ED8822DF485E8DD1 /* Pods-Eidolon.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Eidolon.release.xcconfig"; path = "Target Support Files/Pods-Eidolon/Pods-Eidolon.release.xcconfig"; sourceTree = "<group>"; };
+		6CA4FA5CAF29284C46D9AAA0 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Eidolon/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Eidolon/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		ECF0F9D2F0781750AAEC621B /* Pods-Eidolon.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Eidolon.release.xcconfig"; path = "Target Support Files/Pods-Eidolon/Pods-Eidolon.release.xcconfig"; sourceTree = "<group>"; };
+		E6A162FCE42FAA1E06BD33CD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Eidolon/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Eidolon/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Eidolon-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Eidolon-Bridging-Header.h"; path = "Eidolon/Eidolon-Bridging-Header.h"; sourceTree = "<group>"; };
-		F1E786A78987407C67D797E8 /* Pods-Eidolon.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Eidolon.debug.xcconfig"; path = "Target Support Files/Pods-Eidolon/Pods-Eidolon.debug.xcconfig"; sourceTree = "<group>"; };
+		F6216E0BAA9F279724FE4FA4 /* Pods-Eidolon.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Eidolon.debug.xcconfig"; path = "Target Support Files/Pods-Eidolon/Pods-Eidolon.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,23 +37,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3DCC340DAE15420D3DDBF5E /* libPods-Eidolon.a in Frameworks */,
+				31CCEA1B352A897B99D786BA /* libPods-Eidolon.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0E5CDEE9B38A7A786D16C7B1 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				F1E786A78987407C67D797E8 /* Pods-Eidolon.debug.xcconfig */,
-				ECF0F9D2F0781750AAEC621B /* Pods-Eidolon.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* Eidolon */ = {
 			isa = PBXGroup;
 			children = (
@@ -63,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				25CD7E7EC6359021F0D2C931 /* PrivacyInfo.xcprivacy */,
+				E6A162FCE42FAA1E06BD33CD /* PrivacyInfo.xcprivacy */,
 			);
 			name = Eidolon;
 			sourceTree = "<group>";
@@ -72,9 +62,27 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				0E13D97BA4429F6516EB017C /* libPods-Eidolon.a */,
+				35E253C5F512F51CD9DCE27C /* libPods-Eidolon.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2D42378A4BBCF6E2FAC6DECA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				F6216E0BAA9F279724FE4FA4 /* Pods-Eidolon.debug.xcconfig */,
+				6210D621ED8822DF485E8DD1 /* Pods-Eidolon.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		81E145819CC6558BE47054DC /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				CD7C8EA63937A94DA9C450E6 /* Eidolon */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -91,8 +99,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				0E5CDEE9B38A7A786D16C7B1 /* Pods */,
-				ECF898288F8A655FB280A51A /* ExpoModulesProviders */,
+				2D42378A4BBCF6E2FAC6DECA /* Pods */,
+				81E145819CC6558BE47054DC /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -116,20 +124,12 @@
 			path = Eidolon/Supporting;
 			sourceTree = "<group>";
 		};
-		C4577D04C51A1C483261CFC4 /* Eidolon */ = {
+		CD7C8EA63937A94DA9C450E6 /* Eidolon */ = {
 			isa = PBXGroup;
 			children = (
-				1EEE5EBF74204B4ACEF71D1E /* ExpoModulesProvider.swift */,
+				6CA4FA5CAF29284C46D9AAA0 /* ExpoModulesProvider.swift */,
 			);
 			name = Eidolon;
-			sourceTree = "<group>";
-		};
-		ECF898288F8A655FB280A51A /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				C4577D04C51A1C483261CFC4 /* Eidolon */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Eidolon" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				39D91E66623FDBE0A2AD78F0 /* [Expo] Configure project */,
+				D437B95FE13F073AB92239FE /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				EC59A7D20C67E48112E6975E /* [CP] Embed Pods Frameworks */,
+				3F2FFAAE36EAA545D10B0404 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				A55921086495E035BF55366C /* PrivacyInfo.xcprivacy in Resources */,
+				F3ED2BE11CCA14B7D38C8E5B /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,24 +240,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		39D91E66623FDBE0A2AD78F0 /* [Expo] Configure project */ = {
+		3F2FFAAE36EAA545D10B0404 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Eidolon/Pods-Eidolon-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Eidolon/expo-configure-project.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Eidolon/Pods-Eidolon-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -309,23 +308,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Eidolon/Pods-Eidolon-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EC59A7D20C67E48112E6975E /* [CP] Embed Pods Frameworks */ = {
+		D437B95FE13F073AB92239FE /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Eidolon/Pods-Eidolon-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			inputFileListPaths = (
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Eidolon/Pods-Eidolon-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Eidolon/expo-configure-project.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -335,7 +335,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				94D227A9404BDFC124A51426 /* ExpoModulesProvider.swift in Sources */,
+				8471A08021E9B5CFA6E7EFE3 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,7 +344,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F1E786A78987407C67D797E8 /* Pods-Eidolon.debug.xcconfig */;
+			baseConfigurationReference = F6216E0BAA9F279724FE4FA4 /* Pods-Eidolon.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -380,7 +380,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = ECF0F9D2F0781750AAEC621B /* Pods-Eidolon.release.xcconfig */;
+			baseConfigurationReference = 6210D621ED8822DF485E8DD1 /* Pods-Eidolon.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Personal Assistant (Expo Go)",
+    "slug": "personal-assistant-dev",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "name": "Personal Assistant",
+      "shortName": "PA Dev",
+      "lang": "en-US",
+      "scope": "/",
+      "startUrl": "/",
+      "display": "standalone",
+      "themeColor": "#007AFF",
+      "backgroundColor": "#ffffff",
+      "preferRelatedApplications": false
+    },
+    "plugins": []
+  }
+}

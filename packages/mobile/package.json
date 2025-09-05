@@ -6,6 +6,7 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "ios:fast": "expo start --ios --clear",
     "web": "expo start --web",
     "test": "jest --passWithNoTests",
     "lint": "eslint . --ext .ts,.tsx",
@@ -48,20 +49,22 @@
     "react-native-svg": "15.11.2",
     "react-native-web": "^0.20.0",
     "socket.io-client": "^4.8.1",
+    "styled-components": "^6.0.8",
+    "uuid": "^11.0.5",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0",
-    "@expo/image-utils": "^0.7.6",
-    "@react-native-community/cli": "^20.0.1",
-    "@testing-library/react-native": "^12.8.0",
-    "@types/jest": "^29.5.12",
-    "@types/react": "~19.0.10",
-    "@types/react-native": "~0.73.0",
+    "@babel/core": "^7.24.5",
+    "@testing-library/react-native": "^12.8.1",
+    "@types/react": "~19.0.8",
+    "@types/react-native": "^0.73.0",
+    "@types/uuid": "^10.0.0",
+    "babel-plugin-root-import": "^6.6.0",
+    "eslint": "^8.56.0",
     "jest": "^29.7.0",
+    "prettier": "^3.2.4",
     "react-test-renderer": "19.0.0",
-    "ts-jest": "^29.2.5",
-    "typescript": "~5.8.3"
+    "typescript": "~5.7.2"
   },
   "private": true
 }

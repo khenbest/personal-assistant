@@ -163,7 +163,7 @@ export class IntentClassificationService {
         llmResult = await Promise.race([
           this.llmClassify(text),
           new Promise<IntentResult>((_, reject) => 
-            setTimeout(() => reject(new Error('LLM timeout')), 1000)
+            setTimeout(() => reject(new Error('LLM timeout')), 10000) // Increased to 10 seconds
           )
         ]);
       } catch (error: any) {

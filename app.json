@@ -1,9 +1,5 @@
 {
-  "expo": {
-    "extra": {
-      "eas": {
-        "projectId": "5d0ad4c4-8bd4-48b0-8e7a-d155218aafe7"
-      }
-    }
+  "ios": {
+    "bundleIdentifier": "com.khenbest.kenny-assistant"
   }
 }

@@ -1,23 +1,73 @@
 {
-  "timestamp": "2025-09-04T05:32:34.273Z",
+  "timestamp": "2025-09-04T21:13:09.643Z",
   "processes": [
+    {
+      "id": "port-3000",
+      "command": "node dist/server.js",
+      "pid": 29688,
+      "status": "running",
+      "port": 3000
+    },
+    {
+      "id": "port-8081",
+      "command": "node /Users/kenny/repos/personal-assistant/node_modules/.bin/expo start",
+      "pid": 19970,
+      "status": "running",
+      "port": 8081
+    },
     {
       "id": "port-11434",
       "command": "/usr/local/opt/ollama/bin/ollama serve",
-      "pid": 45658,
+      "pid": 2701,
       "status": "running",
       "port": 11434
     },
     {
-      "id": "tsx-54217",
-      "command": "node /Users/kenny/repos/personal-assistant/node_modules/.bin/tsx watch src/server.ts",
-      "pid": 54217,
+      "id": "expo-474",
+      "command": "/usr/libexec/wallpaperexportd",
+      "pid": 474,
       "status": "running"
     },
     {
-      "id": "ollama-45658",
+      "id": "expo-19933",
+      "command": "/bin/zsh -c -l source /Users/kenny/.claude/shell-snapshots/snapshot-zsh-1757018181554-bb2wyg.sh && eval 'cd ../mobile && npx expo start' \\< /dev/null && pwd -P >| /var/folders/lb/kyy_1mkj103ctgcdvswzg4qm0000gn/T/claude-bfed-cwd",
+      "pid": 19933,
+      "status": "running"
+    },
+    {
+      "id": "expo-19939",
+      "command": "npm exec expo start",
+      "pid": 19939,
+      "status": "running"
+    },
+    {
+      "id": "expo-19970",
+      "command": "node /Users/kenny/repos/personal-assistant/node_modules/.bin/expo start",
+      "pid": 19970,
+      "status": "running"
+    },
+    {
+      "id": "expo-23382",
+      "command": "/bin/zsh -c -l source /Users/kenny/.claude/shell-snapshots/snapshot-zsh-1757018181554-bb2wyg.sh && eval 'cd /Users/kenny/repos/personal-assistant/packages/mobile && npx expo run:ios' \\< /dev/null && pwd -P >| /var/folders/lb/kyy_1mkj103ctgcdvswzg4qm0000gn/T/claude-e883-cwd",
+      "pid": 23382,
+      "status": "running"
+    },
+    {
+      "id": "expo-23388",
+      "command": "npm exec expo run:ios",
+      "pid": 23388,
+      "status": "running"
+    },
+    {
+      "id": "expo-23440",
+      "command": "node /Users/kenny/repos/personal-assistant/node_modules/.bin/expo run:ios",
+      "pid": 23440,
+      "status": "running"
+    },
+    {
+      "id": "ollama-2701",
       "command": "/usr/local/opt/ollama/bin/ollama serve",
-      "pid": 45658,
+      "pid": 2701,
       "status": "running"
     }
   ],
@@ -25,7 +75,11 @@
     {
       "name": "Backend API",
       "url": "http://localhost:3000",
-      "status": "unhealthy"
+      "status": "healthy",
+      "details": {
+        "status": "ok",
+        "timestamp": "2025-09-04T21:13:10.646Z"
+      }
     },
     {
       "name": "Ollama",
@@ -107,7 +161,7 @@
     {
       "name": "Expo Dev Server",
       "url": "http://localhost:8081",
-      "status": "unhealthy"
+      "status": "healthy"
     }
   ],
   "buildStatus": {
@@ -264,7 +318,7 @@
           "API references",
           "Best practices"
         ],
-        "responseTime": 29
+        "responseTime": 114
       },
       {
         "name": "Sequential",
@@ -275,7 +329,7 @@
           "Systematic debugging",
           "Problem decomposition"
         ],
-        "responseTime": 46
+        "responseTime": 95
       },
       {
         "name": "Magic",
@@ -286,7 +340,7 @@
           "Modern frameworks",
           "Responsive design"
         ],
-        "responseTime": 11
+        "responseTime": 92
       },
       {
         "name": "Playwright",
@@ -297,7 +351,7 @@
           "Performance monitoring",
           "Visual testing"
         ],
-        "responseTime": 85
+        "responseTime": 33
       },
       {
         "name": "IDE",
@@ -307,7 +361,7 @@
           "Jupyter execution",
           "VS Code integration"
         ],
-        "responseTime": 10
+        "responseTime": 16
       }
     ],
     "availableCommands": [
@@ -388,7 +442,7 @@
     "contextSystem": {
       "version": "2.0-AutoContext",
       "filesTracked": 4,
-      "lastUpdate": "2025-09-04T05:21:48.926Z",
+      "lastUpdate": "2025-09-04T20:47:36.087Z",
       "completeness": 100
     }
   }

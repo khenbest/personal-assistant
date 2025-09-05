@@ -8,6 +8,7 @@ import { correctionRoutes } from './corrections';
 import chatRoutes from './chat';
 import transcribeRoutes from './transcribe';
 import intentRoutes from './intent';
+import assistantRoutes from './assistant';
 
 export async function registerRoutes(fastify: FastifyInstance) {
   // Register all route modules
@@ -20,4 +21,5 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(chatRoutes);
   await fastify.register(transcribeRoutes);
   await fastify.register(intentRoutes);
+  await fastify.register(assistantRoutes);
 }
