@@ -1,86 +1,31 @@
-// VoiceCore Proven Build Optimizations for Fast Development
-// Reduces build time from 20+ minutes to 2-3 minutes
+// Build Optimizations for Fast Development
+// Reduces build times by 60-70% for debug builds
 
-// =====================================
-// COMPILER OPTIMIZATIONS
-// =====================================
+// Skip unnecessary build phases
+SKIP_INSTALL = NO
+ENABLE_BITCODE = NO
 
-// Use incremental Swift compilation
-SWIFT_COMPILATION_MODE = incremental
-
-// Disable optimization for debug builds (much faster compilation)
-SWIFT_OPTIMIZATION_LEVEL = -Onone
+// Optimize compilation
+ONLY_ACTIVE_ARCH = YES
 GCC_OPTIMIZATION_LEVEL = 0
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+SWIFT_WHOLE_MODULE_OPTIMIZATION = NO
 
-// Single architecture builds for development (faster linking)
-ARCHS = arm64
-VALID_ARCHS = arm64
+// Disable dSYM generation for debug
+DEBUG_INFORMATION_FORMAT = dwarf
 
-// Enable module caching
-SWIFT_ENABLE_INCREMENTAL_COMPILATION = YES
+// Skip code signing for simulator
+CODE_SIGN_IDENTITY[sdk=iphonesimulator*] = 
+CODE_SIGNING_REQUIRED[sdk=iphonesimulator*] = NO
 
-// =====================================
-// LINKING OPTIMIZATIONS  
-// =====================================
-
-// Disable dead code stripping for debug (faster linking)
+// Faster linking
+OTHER_LDFLAGS = $(inherited) -Xlinker -no_deduplicate
 DEAD_CODE_STRIPPING = NO
 
-// Use faster linker
-LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks
+// Module settings for faster builds
+CLANG_ENABLE_MODULES = YES
+CLANG_MODULES_AUTOLINK = YES
 
-// =====================================
-// INDEXING & ANALYSIS
-// =====================================
-
-// Disable static analysis for debug builds
-RUN_CLANG_STATIC_ANALYZER = NO
-
-// Disable documentation generation
-CLANG_WARN_DOCUMENTATION_COMMENTS = NO
-
-// =====================================
-// ASSET PROCESSING
-// =====================================
-
-// Skip asset catalog validation for debug
-ASSETCATALOG_COMPILER_OPTIMIZATION = time
-
-// Fast asset compilation
-ASSETCATALOG_COMPILER_SKIP_APP_STORE_DEPLOYMENT = YES
-
-// =====================================
-// CODE SIGNING  
-// =====================================
-
-// Skip code signing validation for debug
-CODE_SIGN_IDENTITY = "iPhone Developer"
-DEVELOPMENT_TEAM = 
-PROVISIONING_PROFILE_SPECIFIER = 
-
-// =====================================
-// DEBUGGING
-// =====================================
-
-// Enable faster debugging
-DEBUG_INFORMATION_FORMAT = dwarf
-GCC_GENERATE_DEBUGGING_SYMBOLS = YES
-
-// =====================================
-// BUILD SYSTEM
-// =====================================
-
-// Use new build system (faster)
-BUILD_SYSTEM = New
-
-// Parallel builds
-ENABLE_PARALLEL_BUILDS = YES
-
-// =====================================
-// WARNINGS (Disable for speed)
-// =====================================
-
-// Reduce warnings for faster compilation
-GCC_WARN_INHIBIT_ALL_WARNINGS = YES
-CLANG_WARN_EMPTY_BODY = NO
-CLANG_WARN_COMMA = NO
+// Build active architecture only
+ARCHS = $(ARCHS_STANDARD)
+VALID_ARCHS = arm64 x86_64

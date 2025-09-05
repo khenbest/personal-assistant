@@ -1,50 +1,52 @@
 #!/bin/bash
 
-# Test the new assistant endpoint
+# Test Assistant API with Voice Commands
+echo "🎤 Voice Assistant Test Suite"
+echo "============================="
 
-echo "🧪 Testing Personal Assistant API"
-echo "================================"
+API_URL="http://localhost:3000/api/assistant/enhanced"
 
-# Test health check
-echo -e "\n📍 Testing health endpoint..."
-curl -s http://localhost:3000/api/assistant/health | jq .
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
 
-# Test creating a session
-echo -e "\n🆕 Creating new session..."
-SESSION=$(curl -s -X POST http://localhost:3000/api/assistant/session/new | jq -r '.sessionId')
-echo "Session ID: $SESSION"
+test_command() {
+    local command="$1"
+    local description="$2"
+    
+    echo -e "\n${CYAN}Testing:${NC} $description"
+    echo -e "${YELLOW}Command:${NC} \"$command\""
+    
+    response=$(curl -s -X POST "$API_URL" \
+        -H "Content-Type: application/json" \
+        -d "{\"text\":\"$command\",\"userId\":\"test-user\"}")
+    
+    echo -e "${GREEN}Response:${NC}"
+    echo "$response" | jq -C '.' 2>/dev/null || echo "$response"
+    echo "---"
+}
 
-# Test various intents
-echo -e "\n🗓️ Test 1: Schedule a meeting"
-curl -s -X POST http://localhost:3000/api/assistant/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Schedule a meeting with John tomorrow at 2pm",
-    "sessionId": "'$SESSION'"
-  }' | jq .
+# Calendar Tests
+echo -e "\n📅 CALENDAR TESTS"
+test_command "Schedule a meeting tomorrow at 3pm" "Create event"
+test_command "What's on my calendar?" "Query events"
 
-echo -e "\n📅 Test 2: Query calendar"
-curl -s -X POST http://localhost:3000/api/assistant/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "What is on my calendar tomorrow?",
-    "sessionId": "'$SESSION'"
-  }' | jq .
+# Reminder Tests  
+echo -e "\n⏰ REMINDER TESTS"
+test_command "Remind me to call mom in 2 hours" "Time reminder"
+test_command "What are my reminders?" "List reminders"
 
-echo -e "\n⏰ Test 3: Set reminder"
-curl -s -X POST http://localhost:3000/api/assistant/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Remind me to call Sarah at 5pm",
-    "sessionId": "'$SESSION'"
-  }' | jq .
+# Note Tests
+echo -e "\n📝 NOTE TESTS"
+test_command "Note that the wifi password is abc123" "Create note"
+test_command "Show my notes" "Query notes"
 
-echo -e "\n📝 Test 4: Create note"
-curl -s -X POST http://localhost:3000/api/assistant/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Note that the project deadline is next Friday",
-    "sessionId": "'$SESSION'"
-  }' | jq .
+# iOS Action Tests
+echo -e "\n📱 iOS ACTION TESTS"
+test_command "Open settings" "Launch app"
+test_command "Take a photo" "Camera"
+test_command "Turn on flashlight" "Device control"
 
-echo -e "\n✅ Tests complete!"
+echo -e "\n✅ Test complete!"

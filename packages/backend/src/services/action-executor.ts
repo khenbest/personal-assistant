@@ -8,6 +8,8 @@ export interface IntentClassification {
 import { CalendarService } from './calendar-service';
 import { ReminderService } from './reminder-service';
 import { NoteService } from './note-service';
+import { IntentClassificationService } from './intent-classification-service';
+import { LLMService } from './llm-service';
 import { Logger } from 'pino';
 
 export interface ActionResult {
@@ -22,9 +24,12 @@ export class ActionExecutor {
   private calendarService: CalendarService;
   private reminderService: ReminderService;
   private noteService: NoteService;
+  private intentService: IntentClassificationService;
   
   constructor(private logger: Logger) {
-    this.calendarService = new CalendarService(logger);
+    // Create intent service for calendar service
+    this.intentService = new IntentClassificationService(new LLMService());
+    this.calendarService = new CalendarService(this.intentService);
     this.reminderService = new ReminderService();
     this.noteService = new NoteService();
   }
@@ -73,7 +78,7 @@ export class ActionExecutor {
   }
 
   private async createEvent(classification: IntentClassification): Promise<ActionResult> {
-    const { title, datetime_point, datetime_range, attendees, location } = classification.slots || {};
+    const { title } = classification.slots || {};
     
     if (!title && !classification.text) {
       return {
@@ -83,26 +88,36 @@ export class ActionExecutor {
       };
     }
 
-    const eventTitle = title || classification.text;
-    const startTime = datetime_point || datetime_range?.start || new Date().toISOString();
-    const endTime = datetime_range?.end || 
-      new Date(new Date(startTime).getTime() + 60 * 60 * 1000).toISOString(); // 1 hour default
+    const result = await this.calendarService.createEventFromText(
+      classification.text,
+      'demo-user'
+    );
+    
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message,
+        error: result.error
+      };
+    }
+    
+    const event = result.event;
+    
+    if (!event) {
+      return {
+        success: false,
+        message: 'Event creation failed',
+        error: 'No event returned'
+      };
+    }
 
-    const event = await this.calendarService.create({
-      title: eventTitle,
-      startTime,
-      endTime,
-      attendees: attendees || [],
-      location: location || ''
-    });
-
-    const startDate = new Date(startTime);
-    const timeStr = startDate.toLocaleTimeString('en-US', { 
+    const eventStartDate = new Date(event.start_time);
+    const timeStr = eventStartDate.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       hour12: true 
     });
-    const dateStr = startDate.toLocaleDateString('en-US', { 
+    const dateStr = eventStartDate.toLocaleDateString('en-US', { 
       weekday: 'long', 
       month: 'long', 
       day: 'numeric' 
@@ -110,7 +125,7 @@ export class ActionExecutor {
 
     return {
       success: true,
-      message: `I've scheduled "${eventTitle}" for ${dateStr} at ${timeStr}.`,
+      message: `I've scheduled "${event.title}" for ${dateStr} at ${timeStr}.`,
       data: event,
       followUp: 'Would you like me to set a reminder for this event?'
     };
@@ -119,9 +134,10 @@ export class ActionExecutor {
   private async queryEvents(classification: IntentClassification): Promise<ActionResult> {
     const { datetime_point, datetime_range } = classification.slots || {};
     
-    const startDate = datetime_range?.start || datetime_point || new Date().toISOString();
-    const endDate = datetime_range?.end || 
-      new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString(); // 1 day default
+    // const startDate = datetime_range?.start || datetime_point || new Date().toISOString();
+    // Note: endDate would be used for actual calendar query
+    // const endDate = datetime_range?.end || 
+    //   new Date(new Date(startDate).getTime() + 24 * 60 * 60 * 1000).toISOString(); // 1 day default
 
     // Mock implementation for now
     const events: any[] = [];
@@ -232,7 +248,7 @@ export class ActionExecutor {
   }
 
   private async sendMessage(classification: IntentClassification): Promise<ActionResult> {
-    const { recipient, message } = classification.slots || {};
+    // const { recipient, message } = classification.slots || {};
     
     // For now, just simulate message sending
     return {

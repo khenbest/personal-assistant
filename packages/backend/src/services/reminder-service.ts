@@ -41,6 +41,22 @@ export class ReminderService {
   }
 
   /**
+   * Create a reminder (simple interface for action-executor)
+   */
+  async create(reminderData: any): Promise<Reminder> {
+    const result = await this.processReminderCommand(
+      reminderData.text || reminderData.title,
+      reminderData.userId || 'demo-user'
+    );
+    
+    if (!result.success || !result.reminder) {
+      throw new Error(result.message);
+    }
+    
+    return result.reminder;
+  }
+
+  /**
    * Process reminder command from voice input
    */
   async processReminderCommand(command: string, userId: string = 'demo-user'): Promise<ReminderResult> {

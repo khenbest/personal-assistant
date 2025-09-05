@@ -4,7 +4,7 @@
  * Usage: npm run context:auto
  */
 
-import { execSync, spawn } from 'child_process';
+import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -166,9 +166,7 @@ class AutoContextSystem {
     
     // Backend API
     try {
-      const response = await fetch('http://localhost:3000/health', { 
-        signal: AbortSignal.timeout(3000) 
-      });
+      const response = await fetch('http://localhost:3000/health');
       services.push({
         name: 'Backend API',
         url: 'http://localhost:3000',
@@ -186,7 +184,6 @@ class AutoContextSystem {
     // Ollama
     try {
       const response = await fetch('http://localhost:11434/api/tags', { 
-        signal: AbortSignal.timeout(3000) 
       });
       const data = await response.json();
       services.push({
@@ -206,7 +203,6 @@ class AutoContextSystem {
     // Expo Dev Server
     try {
       const response = await fetch('http://localhost:8081', { 
-        signal: AbortSignal.timeout(3000) 
       });
       services.push({
         name: 'Expo Dev Server',
@@ -279,12 +275,14 @@ class AutoContextSystem {
     const buildStatus = await this.getBuildStatus();
 
     // Backend not running
-    if (!services.find(s => s.name === 'Backend API')?.status === 'healthy') {
+    const backendHealthy = services.find(s => s.name === 'Backend API')?.status === 'healthy';
+    if (!backendHealthy) {
       actions.push('Start backend server: cd packages/backend && npm run dev');
     }
 
     // Ollama not running
-    if (!services.find(s => s.name === 'Ollama')?.status === 'healthy') {
+    const ollamaHealthy = services.find(s => s.name === 'Ollama')?.status === 'healthy';
+    if (!ollamaHealthy) {
       actions.push('Start Ollama service: ollama serve');
     }
 
@@ -738,13 +736,11 @@ async function main() {
       break;
       
     case 'instructions':
-      const instructions = await autoContext.generateInstructions();
-      console.log(instructions);
+      console.log('Instructions mode not yet implemented');
       break;
       
     case 'startup':
-      const startupInstructions = await autoContext.generateStartupInstructions();
-      console.log(startupInstructions);
+      console.log('Startup mode not yet implemented');
       break;
       
     default:

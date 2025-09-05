@@ -183,7 +183,9 @@ ${this.sessionContext.keyFacts.length > 0
    * Add a decision made
    */
   addDecision(decision: string): void {
-    this.sessionContext.decisions.push(`[${new Date().toISOString().split('T')[1].split('.')[0]}] ${decision}`);
+    const timePart = new Date().toISOString().split('T')[1];
+    const timeWithoutMs = timePart ? timePart.split('.')[0] : '';
+    this.sessionContext.decisions.push(`[${timeWithoutMs}] ${decision}`);
     // Keep only last 20 decisions
     if (this.sessionContext.decisions.length > 20) {
       this.sessionContext.decisions.shift();

@@ -4,8 +4,12 @@
  * Stores conversation history, project state, and working memory
  */
 
-import { supabase } from '../lib/supabase-client';
+import { createClient } from '@supabase/supabase-js';
 import { ollamaService } from './ollama-service';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 export interface ConversationContext {
   id?: string;
@@ -43,7 +47,7 @@ export class ContextService {
   private workingMemory: WorkingMemory;
   private conversationBuffer: ConversationContext[] = [];
   private readonly MAX_BUFFER_SIZE = 50;
-  private readonly MAX_CONTEXT_LENGTH = 4000; // tokens
+  // private readonly MAX_CONTEXT_LENGTH = 4000; // tokens - unused for now
   private sessionId: string;
 
   constructor() {

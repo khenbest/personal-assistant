@@ -43,6 +43,22 @@ export class NoteService {
   }
 
   /**
+   * Create a note (simple interface for action-executor)
+   */
+  async create(noteData: any): Promise<Note> {
+    const result = await this.processNoteCommand(
+      noteData.text || noteData.content,
+      noteData.userId || 'demo-user'
+    );
+    
+    if (!result.success || !result.note) {
+      throw new Error(result.message);
+    }
+    
+    return result.note;
+  }
+
+  /**
    * Process note command from voice input
    */
   async processNoteCommand(command: string, userId: string = 'demo-user'): Promise<NoteResult> {
